@@ -1,7 +1,7 @@
 <template>
   <header></header>
   <aside
-    class="flex flex-col shrink-0 bg-indigo-900 text-white transition-all"
+    class="flex flex-col shrink-0 bg-[rgb(73,57,113)] text-white transition-all"
     :class="isExpand ? 'w-60' : 'w-20'"
   >
     <!-- logo -->
@@ -14,7 +14,7 @@
     </div>
     <!-- menu -->
     <div
-      class="flex items-center ml-2 py-1 my-1 gap-4 text-base cursor-pointer hover:bg-indigo-300 hover:rounded-s-lg transition-all"
+      class="flex items-center ml-2 py-1 my-1 gap-4 text-base cursor-pointer hover:bg-[rgb(154,154,175)] hover:rounded-s-lg transition-all"
       :class="[
         activeMenu === menu.id && [
           'bg-white',
