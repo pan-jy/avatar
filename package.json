@@ -22,7 +22,10 @@
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.0",
     "@electron-toolkit/utils": "^3.0.0",
-    "electron-updater": "^6.1.7"
+    "electron-updater": "^6.1.7",
+    "fast-glob": "^3.3.2",
+    "vite-plugin-svg-icons": "^2.0.1",
+    "vue-router": "^4.3.0"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config": "^1.0.2",

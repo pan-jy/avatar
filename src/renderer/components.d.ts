@@ -7,6 +7,13 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
+    ActionCapture: typeof import('./src/pages/ActionCapture.vue')['default']
     Home: typeof import('./src/pages/Home.vue')['default']
+    MainLayout: typeof import('./src/components/layout/MainLayout.vue')['default']
+    ModelLibrary: typeof import('./src/pages/ModelLibrary.vue')['default']
+    RouterLink: typeof import('vue-router')['RouterLink']
+    RouterView: typeof import('vue-router')['RouterView']
+    Settings: typeof import('./src/pages/Settings.vue')['default']
+    SvgIcon: typeof import('./src/components/common/SvgIcon.vue')['default']
   }
 }

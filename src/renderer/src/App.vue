@@ -1,49 +1,5 @@
 <template>
-  <main>
-    <nav>
-      <span class="text-lg text-blue-400 font-bold">Avatar</span>
-      <ul class="nav">
-        <li>
-          <a href="#">
-            <i class="fa fa-house nav-icon"></i>
-            <span class="nav-text">Home</span>
-          </a>
-        </li>
-
-        <li class="nav-item">
-          <a href="#">
-            <i class="fa fa-user nav-icon"></i>
-            <span class="nav-text">Profile</span>
-          </a>
-        </li>
-
-        <li class="nav-item">
-          <a href="#">
-            <i class="fa fa-calendar-check nav-icon"></i>
-            <span class="nav-text">Schedule</span>
-          </a>
-        </li>
-
-        <li class="nav-item">
-          <a href="#">
-            <i class="fa fa-person-running nav-icon"></i>
-            <span class="nav-text">Activities</span>
-          </a>
-        </li>
-
-        <li class="nav-item">
-          <a href="#">
-            <i class="fa fa-sliders nav-icon"></i>
-            <span class="nav-text">Settings</span>
-          </a>
-        </li>
-      </ul>
-    </nav>
-
-    <section class="content">
-      <Home />
-    </section>
-  </main>
+  <router-view />
 </template>
 
 <script setup lang="ts"></script>
@@ -52,4 +8,19 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+html,
+body,
+#app {
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 </style>
