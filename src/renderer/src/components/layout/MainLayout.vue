@@ -1,7 +1,7 @@
 <template>
   <header></header>
   <aside
-    class="flex flex-col bg-indigo-900 text-white transition-all"
+    class="flex flex-col shrink-0 bg-indigo-900 text-white transition-all"
     :class="isExpand ? 'w-60' : 'w-20'"
   >
     <!-- logo -->
