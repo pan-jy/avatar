@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow } from 'electron'
+import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
@@ -30,6 +30,7 @@ function createWindow(): void {
   // Load the remote URL for development or the local html file for production.
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
+    // mainWindow.webContents.openDevTools()
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
@@ -69,3 +70,26 @@ app.on('window-all-closed', () => {
 
 // In this file you can include the rest of your app"s specific main process
 // code. You can also put them in separate files and require them here.
+ipcMain.handle('open-new-win', (_, path) => {
+  const childWindow = new BrowserWindow({
+    autoHideMenuBar: true,
+    show: false,
+    title: path,
+    webPreferences: {
+      // preload: join(__dirname, '../preload/index.js'),
+      nodeIntegration: true,
+      contextIsolation: false,
+    }
+  })
+
+  childWindow.once('ready-to-show', () => {
+    childWindow.show()
+  })
+
+  if (is.dev && process.env.ELECTRON_RENDERER_URL) {
+    childWindow.loadURL(`${process.env['ELECTRON_RENDERER_URL']}${path}`)
+    // childWindow.webContents.openDevTools()
+  } else {
+    childWindow.loadFile(join(__dirname, `../renderer/index.html/${path}`))
+  }
+})

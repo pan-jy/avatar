@@ -19,6 +19,10 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import('@renderer/pages/Settings.vue')
       }
     ]
+  },
+  {
+    path: '/model',
+    component: () => import('@renderer/pages/Model.vue')
   }
 ]
 
