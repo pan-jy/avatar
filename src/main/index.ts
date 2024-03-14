@@ -78,7 +78,7 @@ ipcMain.handle('open-new-win', (_, path) => {
     webPreferences: {
       // preload: join(__dirname, '../preload/index.js'),
       nodeIntegration: true,
-      contextIsolation: false,
+      contextIsolation: false
     }
   })
 

@@ -14,6 +14,8 @@
     </div>
     <!-- menu -->
     <div
+      v-for="menu in menus"
+      :key="menu.id"
       class="flex items-center ml-2 py-1 my-1 gap-4 text-base cursor-pointer hover:bg-[rgb(154,154,175)] hover:rounded-s-lg transition-all"
       :class="[
         activeMenu === menu.id && [
@@ -27,8 +29,6 @@
         ],
         isExpand ? ['pl-4'] : ['pr-2', 'justify-center']
       ]"
-      v-for="menu in menus"
-      :key="menu.id"
       @click="changeMenu(menu)"
     >
       <SvgIcon class="w-5 h-5" :name="menu.icon" />

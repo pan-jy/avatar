@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import { CSSProperties, computed } from 'vue';
+import { CSSProperties, computed } from 'vue'
 
 interface SvgProps {
   name: string
