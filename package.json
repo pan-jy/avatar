@@ -25,6 +25,7 @@
     "@electron-toolkit/utils": "^3.0.0",
     "electron-updater": "^6.1.7",
     "fast-glob": "^3.3.2",
+    "three": "^0.162.0",
     "vite-plugin-svg-icons": "^2.0.1",
     "vue-router": "^4.3.0"
   },
@@ -36,6 +37,7 @@
     "@electron-toolkit/tsconfig": "^1.0.1",
     "@rushstack/eslint-patch": "^1.6.1",
     "@types/node": "^18.19.5",
+    "@types/three": "^0.162.0",
     "@vitejs/plugin-vue": "^5.0.2",
     "@vue/eslint-config-prettier": "^9.0.0",
     "@vue/eslint-config-typescript": "^12.0.0",

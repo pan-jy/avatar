@@ -30,6 +30,7 @@ export default defineConfig({
         iconDirs: [resolve(process.cwd(), 'src/renderer/src/assets/svgs')],
         symbolId: 'icon-[dir]-[name]'
       })
-    ]
+    ],
+    publicDir: resolve(__dirname, 'resources')
   }
 })
