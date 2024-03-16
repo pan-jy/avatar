@@ -7,13 +7,19 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
-    ActionCapture: typeof import('./src/pages/ActionCapture.vue')['default']
-    MainLayout: typeof import('./src/components/layout/MainLayout.vue')['default']
-    Model: typeof import('./src/pages/Model.vue')['default']
-    ModelLibrary: typeof import('./src/pages/ModelLibrary.vue')['default']
-    RouterLink: typeof import('vue-router')['RouterLink']
-    RouterView: typeof import('vue-router')['RouterView']
-    Settings: typeof import('./src/pages/Settings.vue')['default']
-    SvgIcon: typeof import('./src/components/common/SvgIcon.vue')['default']
+    ACol: (typeof import('ant-design-vue/es'))['Col']
+    ACollapse: (typeof import('ant-design-vue/es'))['Collapse']
+    ACollapsePanel: (typeof import('ant-design-vue/es'))['CollapsePanel']
+    ActionCapture: (typeof import('./src/pages/ActionCapture.vue'))['default']
+    AInputNumber: (typeof import('ant-design-vue/es'))['InputNumber']
+    ARow: (typeof import('ant-design-vue/es'))['Row']
+    ASlider: (typeof import('ant-design-vue/es'))['Slider']
+    MainLayout: (typeof import('./src/components/layout/MainLayout.vue'))['default']
+    Model: (typeof import('./src/pages/Model.vue'))['default']
+    ModelLibrary: (typeof import('./src/pages/ModelLibrary.vue'))['default']
+    RouterLink: (typeof import('vue-router'))['RouterLink']
+    RouterView: (typeof import('vue-router'))['RouterView']
+    Settings: (typeof import('./src/pages/Settings.vue'))['default']
+    SvgIcon: (typeof import('./src/components/common/SvgIcon.vue'))['default']
   }
 }

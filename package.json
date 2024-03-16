@@ -23,6 +23,7 @@
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.0",
     "@electron-toolkit/utils": "^3.0.0",
+    "ant-design-vue": "^4.1.2",
     "electron-updater": "^6.1.7",
     "fast-glob": "^3.3.2",
     "three": "^0.162.0",

@@ -73,7 +73,7 @@ app.on('window-all-closed', () => {
 
 // handel open new window
 ipcMain.handle('open-new-win', (_, path) => {
-  createWindow(
+  const win = createWindow(
     {
       autoHideMenuBar: true,
       show: false,
@@ -81,9 +81,19 @@ ipcMain.handle('open-new-win', (_, path) => {
       parent: BrowserWindow.getFocusedWindow() ?? undefined,
       webPreferences: {
         nodeIntegration: true,
-        contextIsolation: false
+        contextIsolation: false,
+        preload: join(__dirname, '../preload/index.js')
       }
     },
     path
   )
+  win.webContents.openDevTools()
+})
+
+ipcMain.on('close-win', () => {
+  BrowserWindow.getFocusedWindow()?.close()
+})
+
+ipcMain.on('open-dev-tools', () => {
+  BrowserWindow.getFocusedWindow()?.webContents.openDevTools()
 })

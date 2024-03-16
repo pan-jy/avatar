@@ -3,6 +3,7 @@ import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import vue from '@vitejs/plugin-vue'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
+import { AntDesignVueResolver } from 'unplugin-vue-components/resolvers'
 import { createSvgIconsPlugin } from 'vite-plugin-svg-icons'
 
 export default defineConfig({
@@ -24,7 +25,12 @@ export default defineConfig({
         imports: ['vue']
       }),
       Components({
-        dirs: ['src/components', 'src/pages']
+        dirs: ['src/components', 'src/pages'],
+        resolvers: [
+          AntDesignVueResolver({
+            importStyle: false
+          })
+        ]
       }),
       createSvgIconsPlugin({
         iconDirs: [resolve(process.cwd(), 'src/renderer/src/assets/svgs')],
