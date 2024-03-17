@@ -8,11 +8,11 @@
         }"
       >
         <Collapse>
-          <CollapsePanel header="骨骼">
+          <CollapsePanel header="模型旋转">
             <Collapse ghost>
               <CollapsePanel v-for="bone in bones" :key="bone.uuid" :header="bone.name">
                 <Form>
-                  <Form.Item v-for="key in ['x', 'y', 'z']" :key="key" :label="key.toUpperCase()">
+                  <Form.Item v-for="key in ['x', 'y', 'z']" :key="key" :label="`R.${key}`">
                     <div class="flex">
                       <Slider
                         v-model:value="bone.rotation[key]"
@@ -29,7 +29,7 @@
                       />
                       <InputNumber
                         v-model:value="bone.rotation[key]"
-                        class="w-[70px] ml-2"
+                        class="w-[60px] ml-2"
                         :step="0.01"
                         :min="-3.14"
                         :max="3.14"
@@ -93,3 +93,20 @@ const bones = computed(() => {
 //   window.electron.ipcRenderer.send('open-dev-tools')
 // }
 </script>
+
+<style>
+.ant-collapse > .ant-collapse-item > .ant-collapse-header {
+  padding: 4px;
+}
+.ant-collapse .ant-collapse-content > .ant-collapse-content-box {
+  padding: 0;
+}
+
+.ant-collapse-ghost > .ant-collapse-item > .ant-collapse-content > .ant-collapse-content-box {
+  padding-block: 0;
+  padding: 0px 8px;
+}
+.ant-form-item {
+  margin-bottom: 4px;
+}
+</style>
