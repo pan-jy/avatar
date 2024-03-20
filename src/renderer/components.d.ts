@@ -7,19 +7,20 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
-    ACol: (typeof import('ant-design-vue/es'))['Col']
-    ACollapse: (typeof import('ant-design-vue/es'))['Collapse']
-    ACollapsePanel: (typeof import('ant-design-vue/es'))['CollapsePanel']
+    Accordion: (typeof import('primevue/accordion'))['default']
+    AccordionTab: (typeof import('primevue/accordiontab'))['default']
     ActionCapture: (typeof import('./src/pages/ActionCapture.vue'))['default']
     AInputNumber: (typeof import('ant-design-vue/es'))['InputNumber']
     ARow: (typeof import('ant-design-vue/es'))['Row']
     ASlider: (typeof import('ant-design-vue/es'))['Slider']
+    Button: (typeof import('primevue/button'))['default']
     MainLayout: (typeof import('./src/components/layout/MainLayout.vue'))['default']
     Model: (typeof import('./src/pages/Model.vue'))['default']
     ModelLibrary: (typeof import('./src/pages/ModelLibrary.vue'))['default']
     RouterLink: (typeof import('vue-router'))['RouterLink']
     RouterView: (typeof import('vue-router'))['RouterView']
     Settings: (typeof import('./src/pages/Settings.vue'))['default']
+    Slider: (typeof import('primevue/slider'))['default']
     SvgIcon: (typeof import('./src/components/common/SvgIcon.vue'))['default']
   }
 }

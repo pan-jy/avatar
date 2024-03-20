@@ -2,7 +2,7 @@
   <div class="flex flex-row w-full h-full">
     <div ref="container" class="flex-1 overflow-hidden min-w-[500px]"></div>
     <div class="w-[350px] flex flex-col px-2 pb-2 h-full overflow-auto">
-      <ConfigProvider
+      <!-- <ConfigProvider
         :theme="{
           algorithm: theme.compactAlgorithm
         }"
@@ -41,7 +41,21 @@
             </Collapse>
           </CollapsePanel>
         </Collapse>
-      </ConfigProvider>
+      </ConfigProvider> -->
+      <Accordion :multiple="true">
+        <AccordionTab v-for="bone in bones" :key="bone.uuid" :header="bone.name">
+          <div v-for="key in ['x', 'y', 'z']" :key="key">
+            <span>R.{{ key }}</span>
+            <Slider
+              v-model="bone.rotation[key]"
+              class="w-14rem"
+              :min="-3.14"
+              :max="3.14"
+              :step="0.01"
+            />
+          </div>
+        </AccordionTab>
+      </Accordion>
     </div>
   </div>
 </template>
@@ -50,15 +64,6 @@
 import { ModelPreview } from '@renderer/three/ModelPreview'
 import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import {
-  Collapse,
-  CollapsePanel,
-  Form,
-  Slider,
-  InputNumber,
-  ConfigProvider,
-  theme
-} from 'ant-design-vue'
 import { Bone, Group, Object3DEventMap } from 'three'
 
 const route = useRoute()
@@ -93,20 +98,3 @@ const bones = computed(() => {
 //   window.electron.ipcRenderer.send('open-dev-tools')
 // }
 </script>
-
-<style>
-.ant-collapse > .ant-collapse-item > .ant-collapse-header {
-  padding: 4px;
-}
-.ant-collapse .ant-collapse-content > .ant-collapse-content-box {
-  padding: 0;
-}
-
-.ant-collapse-ghost > .ant-collapse-item > .ant-collapse-content > .ant-collapse-content-box {
-  padding-block: 0;
-  padding: 0px 8px;
-}
-.ant-form-item {
-  margin-bottom: 4px;
-}
-</style>
