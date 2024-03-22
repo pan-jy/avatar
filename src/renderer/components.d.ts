@@ -24,6 +24,7 @@ declare module 'vue' {
     PrAccordion: (typeof import('primevue/accordion'))['default']
     PrAccordionTab: (typeof import('primevue/accordiontab'))['default']
     PrKnob: (typeof import('primevue/knob'))['default']
+    PrMenubar: (typeof import('primevue/menubar'))['default']
     RouterLink: (typeof import('vue-router'))['RouterLink']
     RouterView: (typeof import('vue-router'))['RouterView']
     Settings: (typeof import('./src/pages/Settings.vue'))['default']

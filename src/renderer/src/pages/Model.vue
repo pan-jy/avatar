@@ -51,8 +51,4 @@ const bones = computed(() => {
   })
   return bones
 })
-
-// function openDevTools() {
-//   window.electron.ipcRenderer.send('open-dev-tools')
-// }
 </script>

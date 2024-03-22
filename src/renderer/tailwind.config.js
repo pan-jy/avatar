@@ -1,6 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 const colors = require('tailwindcss/colors')
 module.exports = {
+  darkMode: 'selector',
   content: ['./src/renderer/index.html', './src/renderer/src/**/*.{vue,js,ts,jsx,tsx}'],
   theme: {
     extend: {
@@ -10,7 +11,8 @@ module.exports = {
         primary: colors.sky,
         test: colors.purple,
         bluegray: colors.slate,
-        red: colors.rose
+        red: colors.rose,
+        surface: colors.zinc
       }
     }
   },

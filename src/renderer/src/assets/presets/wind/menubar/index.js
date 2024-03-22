@@ -17,8 +17,8 @@ export default {
       'shadow-md',
 
       // Color
-      'bg-surface-0 dark:bg-surface-900',
-      'ring-1 ring-inset ring-surface-100 dark:ring-surface-800 ring-offset-0'
+      'bg-surface-0 dark:bg-surface-900'
+      // 'ring-1 ring-inset ring-surface-100 dark:ring-surface-800 ring-offset-0'
     ]
   },
   menu: ({ props }) => ({

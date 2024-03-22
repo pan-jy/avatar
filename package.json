@@ -23,8 +23,13 @@
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.0",
     "@electron-toolkit/utils": "^3.0.0",
+    "@mediapipe/camera_utils": "^0.3.1675466862",
+    "@mediapipe/control_utils": "^0.6.1675466023",
+    "@mediapipe/drawing_utils": "^0.3.1675466124",
+    "@mediapipe/holistic": "^0.5.1675471629",
     "electron-updater": "^6.1.7",
     "fast-glob": "^3.3.2",
+    "primeicons": "^6.0.1",
     "primevue": "^3.50.0",
     "three": "^0.162.0",
     "vite-plugin-svg-icons": "^2.0.1",

@@ -16,7 +16,6 @@
     <section>
       <h2 class="text-lg font-mono font-bold">内置模型</h2>
     </section>
-    <Button label="Submit" />
   </div>
 </template>
 
