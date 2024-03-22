@@ -22,7 +22,11 @@ export default defineConfig({
       vue(),
       Components({
         dirs: ['src/components', 'src/pages'],
-        resolvers: [PrimeVueResolver()]
+        resolvers: [
+          PrimeVueResolver({
+            prefix: 'Pr'
+          })
+        ]
       }),
       createSvgIconsPlugin({
         iconDirs: [resolve(process.cwd(), 'src/renderer/src/assets/svgs')],

@@ -8,7 +8,7 @@ export default {
   range: {
     class: [
       // Stroke
-      'stroke-current',
+      // 'stroke-current',
 
       // Color
       'stroke-surface-200 dark:stroke-surface-700',

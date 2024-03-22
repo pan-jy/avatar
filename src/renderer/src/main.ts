@@ -4,7 +4,7 @@ import router from './router'
 import 'virtual:svg-icons-register'
 import PrimeVue from 'primevue/config'
 import Wind from '@renderer/assets/presets/wind'
-import 'primevue/resources/themes/aura-dark-amber/theme.css' // theme
+// import 'primevue/resources/themes/aura-dark-amber/theme.css' // theme
 
 const app = createApp(App)
 

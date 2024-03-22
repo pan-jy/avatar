@@ -3,8 +3,7 @@ export default {
     header: ({ props }) => ({
       class: [
         // Sizing
-        'pt-6 pb-0',
-        'mt-6',
+        'py-2',
 
         // Shape
         'border-x-0 border-b-0',
@@ -19,7 +18,7 @@ export default {
     headerAction: ({ context }) => ({
       class: [
         //Font
-        'font-semibold',
+        // 'font-semibold',
         'leading-7',
 
         // Alignments
@@ -52,7 +51,7 @@ export default {
         'leading-7',
 
         // Spacing
-        'pr-12 pt-2',
+        'pt-2 pr-8',
 
         // Color
         'text-surface-600 dark:text-surface-0/70'
