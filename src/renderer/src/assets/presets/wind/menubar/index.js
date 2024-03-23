@@ -17,8 +17,8 @@ export default {
       'shadow-md',
 
       // Color
-      'bg-surface-0 dark:bg-surface-900'
-      // 'ring-1 ring-inset ring-surface-100 dark:ring-surface-800 ring-offset-0'
+      'bg-surface-0 dark:bg-surface-800/90',
+      'ring-1 ring-inset ring-surface-100 dark:ring-surface-800 ring-offset-0'
     ]
   },
   menu: ({ props }) => ({
@@ -61,25 +61,26 @@ export default {
   content: ({ props, context }) => ({
     class: [
       // Shape
-      { 'rounded-md': props.root },
+      // { 'rounded-md': props.root },
 
       //  Colors
-      {
-        'text-surface-500 dark:text-white/70': !context.focused && !context.active,
-        'text-surface-500 dark:text-white/70 bg-surface-200 dark:bg-black/70':
-          context.focused && !context.active,
-        'text-surface-900 dark:text-surface-0/80 bg-surface-50 dark:bg-black/70':
-          context.focused && context.active,
-        'text-surface-900 dark:text-surface-0/80 bg-surface-50 dark:bg-black/70':
-          !context.focused && context.active
-      },
+      // {
+      //   'text-surface-500 dark:text-white/70': !context.focused && !context.active,
+      //   'text-surface-500 dark:text-white/70 bg-surface-200 dark:bg-black/70':
+      //     context.focused && !context.active,
+      //   'text-surface-900 dark:text-surface-0/80 bg-surface-50 dark:bg-black/70':
+      //     context.focused && context.active,
+      //   'text-surface-900 dark:text-surface-0/80 bg-surface-50 dark:bg-black/70':
+      //     !context.focused && context.active
+      // },
 
       // Hover States
-      {
-        'hover:bg-surface-50 dark:hover:bg-surface-800': !context.active,
-        'hover:bg-surface-100 dark:hover:bg-black/40 text-surface-900 dark:text-surface-0/80':
-          context.active
-      },
+      // {
+      //   'hover:bg-surface-50 dark:hover:bg-surface-800': !context.active,
+      //   'hover:bg-surface-100 dark:hover:bg-black/40 text-surface-900 dark:text-surface-0/80':
+      //     context.active
+      // },
+      'text-surface-900 dark:text-surface-100',
 
       // Transitions
       'transition-all',
