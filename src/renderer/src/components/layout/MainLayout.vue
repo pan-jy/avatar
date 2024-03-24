@@ -50,7 +50,7 @@ const menus = ref([
   { label: '设置', icon: 'pi-cog', url: '/settings' }
 ])
 
-const theme = ref<'light' | 'dark'>((localStorage.theme as 'light' | 'dark') || 'light')
+const theme = ref<'light' | 'dark'>(localStorage.theme ?? 'light')
 
 function tuggleTheme() {
   document.documentElement.classList.toggle('dark')

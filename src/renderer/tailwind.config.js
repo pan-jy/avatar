@@ -12,7 +12,8 @@ module.exports = {
         test: colors.purple,
         bluegray: colors.slate,
         red: colors.rose,
-        surface: colors.zinc
+        surface: colors.zinc,
+        'surface-0': 'white'
       }
     }
   },

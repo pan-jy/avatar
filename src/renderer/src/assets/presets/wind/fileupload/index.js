@@ -5,77 +5,85 @@ export default {
   buttonbar: {
     class: [
       // Flexbox
-      'flex',
-      'flex-wrap',
+      // 'flex',
+      // 'flex-wrap',
 
-      // Colors
-      'bg-surface-50',
-      'dark:bg-surface-800',
-      'text-surface-700',
-      'dark:text-white/80',
+      // // Colors
+      // 'bg-surface-50',
+      // 'dark:bg-surface-800',
+      // 'text-surface-700',
+      // 'dark:text-white/80',
 
-      // Spacing
-      'p-5',
-      'gap-2',
+      // // Spacing
+      // 'p-5',
+      // 'gap-2',
 
-      // Borders
-      'border',
-      'border-solid',
-      'border-surface-200',
-      'dark:border-surface-700',
-      'border-b-0',
+      // // Borders
+      // 'border',
+      // 'border-solid',
+      // 'border-surface-200',
+      // 'dark:border-surface-700',
+      // 'border-b-0',
 
-      // Shape
-      'rounded-tr-lg',
-      'rounded-tl-lg'
-    ]
-  },
-  chooseButton: {
-    class: [
-      'relative',
+      // // Shape
+      // 'rounded-tr-lg',
+      // 'rounded-tl-lg',
 
-      // Alignments
-      'items-center inline-flex text-center align-bottom justify-center',
-
-      // Spacing
-      'px-2.5 py-1.5',
-
-      // Shape
-      'rounded-md',
-
-      // Font
-      'text-sm',
-      'font-semibold',
-
-      // Colors
-      'text-white dark:text-surface-900',
-      'bg-primary-500 dark:bg-primary-400',
-      'border-primary-500 dark:border-primary-400',
-
-      // States
-      'hover:bg-primary-600 dark:hover:bg-primary-300',
-
-      // Misc
-      'overflow-hidden',
+      'absolute',
+      'rounded-full',
+      'z-10',
+      'left-1/2',
+      'transform -translate-x-1/2',
       'cursor-pointer'
     ]
   },
-  chooseIcon: {
-    class: ['mr-2', 'inline-block']
-  },
-  chooseButtonLabel: {
-    class: ['flex-1', 'font-bold']
-  },
-  uploadbutton: {
-    icon: {
-      class: 'mr-2'
-    }
-  },
-  cancelbutton: {
-    icon: {
-      class: 'mr-2'
-    }
-  },
+  // chooseButton: {
+  //   class: [
+  //     // 'relative',
+  //     'absolute',
+
+  //     // Alignments
+  //     'items-center inline-flex text-center align-bottom justify-center',
+
+  //     // Spacing
+  //     'px-2.5 py-1.5',
+
+  //     // Shape
+  //     'rounded-md',
+
+  //     // Font
+  //     'text-sm',
+  //     'font-semibold',
+
+  //     // Colors
+  //     'text-white dark:text-surface-900',
+  //     'bg-primary-500 dark:bg-primary-400',
+  //     'border-primary-500 dark:border-primary-400',
+
+  //     // States
+  //     'hover:bg-primary-600 dark:hover:bg-primary-300',
+
+  //     // Misc
+  //     'overflow-hidden',
+  //     'cursor-pointer'
+  //   ]
+  // },
+  // chooseIcon: {
+  //   class: ['mr-2', 'inline-block']
+  // },
+  // chooseButtonLabel: {
+  //   class: ['flex-1', 'font-bold']
+  // },
+  // uploadbutton: {
+  //   icon: {
+  //     class: 'mr-2'
+  //   }
+  // },
+  // cancelbutton: {
+  //   icon: {
+  //     class: 'mr-2'
+  //   }
+  // },
   content: {
     class: [
       // Position
@@ -88,7 +96,7 @@ export default {
       'dark:text-white/80',
 
       // Spacing
-      'p-8',
+      'p-4',
 
       // Borders
       'border',
@@ -96,7 +104,13 @@ export default {
       'dark:border-surface-700',
 
       // Shape
-      'rounded-b-lg'
+      'rounded-2xl',
+
+      // Hover
+      'hover:bg-surface-50 dark:hover:bg-surface-800',
+
+      // Transitions
+      'transition-transform duration-200 ease-in-out'
     ]
   },
   file: {
@@ -115,7 +129,7 @@ export default {
       'border',
       'border-surface-200',
       'dark:border-surface-700',
-      'gap-2',
+      'gap-4',
 
       // Shape
       'rounded'
@@ -124,11 +138,14 @@ export default {
   thumbnail: {
     class: 'shrink-0'
   },
+  actions: {
+    class: 'flex-1 flex justify-end'
+  },
   fileName: {
     class: 'mb-2 break-all'
   },
   fileSize: {
-    class: 'mr-2'
+    class: 'mr-2 leading-[1.5rem]'
   },
   uploadicon: {
     class: 'mr-2'
