@@ -24,9 +24,8 @@
         </RouterLink>
       </template>
       <template #end>
-        <div @click="tuggleTheme">
-          <i v-if="theme === 'light'" class="pi pi-sun text-xl" />
-          <i v-else class="pi pi-moon text-xl text-primary-500" />
+        <div class="cursor-pointer" @click="toggleDark()">
+          <i class="pi text-xl" :class="isDark ? 'pi-sun' : 'pi-moon text-primary-500'" />
         </div>
       </template>
     </PrMenubar>
@@ -40,6 +39,10 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useDark, useToggle } from '@vueuse/core'
+
+const isDark = useDark()
+const toggleDark = useToggle(isDark)
 
 const router = useRouter()
 const route = useRoute()
@@ -49,12 +52,4 @@ const menus = ref([
   { label: '动作捕捉', icon: 'pi-camera', url: '/action-capture' },
   { label: '设置', icon: 'pi-cog', url: '/settings' }
 ])
-
-const theme = ref<'light' | 'dark'>(localStorage.theme ?? 'light')
-
-function tuggleTheme() {
-  document.documentElement.classList.toggle('dark')
-  theme.value = theme.value === 'light' ? 'dark' : 'light'
-  localStorage.setItem('theme', theme.value)
-}
 </script>

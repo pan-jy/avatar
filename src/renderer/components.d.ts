@@ -7,31 +7,22 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
-    Accordion: (typeof import('primevue/accordion'))['default']
-    AccordionTab: (typeof import('primevue/accordiontab'))['default']
     ActionCapture: (typeof import('./src/pages/ActionCapture.vue'))['default']
-    AInputNumber: (typeof import('ant-design-vue/es'))['InputNumber']
-    ARow: (typeof import('ant-design-vue/es'))['Row']
-    ASlider: (typeof import('ant-design-vue/es'))['Slider']
-    Button: (typeof import('primevue/button'))['default']
     Knob: (typeof import('./src/components/common/form/Knob.vue'))['default']
     MainLayout: (typeof import('./src/components/layout/MainLayout.vue'))['default']
     Model: (typeof import('./src/pages/Model.vue'))['default']
     ModelLibrary: (typeof import('./src/pages/ModelLibrary.vue'))['default']
-    PAccordion: (typeof import('primevue/accordion'))['default']
-    PAccordionTab: (typeof import('primevue/accordiontab'))['default']
-    PKnob: (typeof import('primevue/knob'))['default']
     PrAccordion: (typeof import('primevue/accordion'))['default']
     PrAccordionTab: (typeof import('primevue/accordiontab'))['default']
-    PrBadge: (typeof import('primevue/badge'))['default']
     PrButton: (typeof import('primevue/button'))['default']
+    PrDropdown: (typeof import('primevue/dropdown'))['default']
     PrFileUpload: (typeof import('primevue/fileupload'))['default']
     PrKnob: (typeof import('primevue/knob'))['default']
     PrMenubar: (typeof import('primevue/menubar'))['default']
+    PrProgressSpinner: (typeof import('primevue/progressspinner'))['default']
     RouterLink: (typeof import('vue-router'))['RouterLink']
     RouterView: (typeof import('vue-router'))['RouterView']
     Settings: (typeof import('./src/pages/Settings.vue'))['default']
-    Slider: (typeof import('primevue/slider'))['default']
     SvgIcon: (typeof import('./src/components/common/SvgIcon.vue'))['default']
   }
 }

@@ -24,4 +24,8 @@ body,
   box-sizing: border-box;
   user-select: none;
 }
+
+.pi {
+  line-height: normal !important;
+}
 </style>

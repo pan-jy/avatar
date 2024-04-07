@@ -20,25 +20,39 @@
 
 <script setup lang="ts">
 import { ModelPreview } from '@renderer/three/ModelPreview'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { Bone, Group, Object3DEventMap } from 'three'
+import { useThrottleFn } from '@vueuse/core'
 
 const route = useRoute()
 const model = ref<Group<Object3DEventMap> | null>()
 
 const container = ref<HTMLDivElement | null>(null)
 
+let onResize: () => void
+let modelPreview: ModelPreview
 onMounted(async () => {
   if (!container.value) return
   const { path } = route.query
   try {
-    const modelPreview = new ModelPreview(container.value)
+    modelPreview = new ModelPreview(container.value)
+    // 监听窗口大小变化
+    onResize = useThrottleFn(() => {
+      modelPreview.setSize()
+    }, 100)
+    window.addEventListener('resize', onResize)
+    // 渲染
     modelPreview.start()
     model.value = await modelPreview.loadModel(path as string)
   } catch (error) {
     alert(error)
   }
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', onResize)
+  modelPreview.dispose()
 })
 
 const bones = computed(() => {

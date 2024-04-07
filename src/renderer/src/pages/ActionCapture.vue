@@ -1,22 +1,57 @@
 <template>
   <div class="relative h-full">
-    <PrButton class="mb-4" @click="tuggleCamera">
-      <div v-if="isCameraStarted">
-        <i class="pi pi-pause" />
-        <span> 停止 </span>
-      </div>
-      <div v-else>
-        <i class="pi pi-caret-right" />
-        <span> 开始 </span>
-      </div>
-    </PrButton>
+    <section class="flex items-center gap-4 mb-4">
+      <PrButton class="gap-1" @click="tuggleCamera">
+        <i class="pi" :class="isCameraStarted ? 'pi-pause' : 'pi-caret-right'" />
+        <span> {{ isCameraStarted ? '停止' : '开始' }} </span>
+      </PrButton>
+      <PrButton class="gap-1" @click="showLandmarks = !showLandmarks">
+        <i class="pi" :class="showLandmarks ? 'pi-eye-slash' : 'pi-eye'" />
+        <span> {{ showLandmarks ? '隐藏' : '显示' }}骨架 </span>
+      </PrButton>
+
+      <PrDropdown
+        v-model="humanModel"
+        class="cursor-pointer w-[200px]"
+        :options="PresetModelList"
+        option-label="name"
+      >
+        <template #value="slotProps">
+          <div class="flex items-center">
+            <img
+              class="h-6 mr-2 rounded-md overflow-hidden"
+              :alt="slotProps.value.name"
+              :src="slotProps.value.cover"
+            />
+            <div>{{ slotProps.value.name }}</div>
+          </div>
+        </template>
+        <template #option="slotProps">
+          <div class="flex items-center">
+            <img
+              class="h-4 mr-2 rounded-sm overflow-hidden"
+              :alt="slotProps.option.name"
+              :src="slotProps.option.cover"
+            />
+            <div>{{ slotProps.option.name }}</div>
+          </div>
+        </template>
+      </PrDropdown>
+    </section>
     <section ref="container" class="grid grid-cols-2 gap-2">
-      <video ref="videoElement" class="bg-gray-500 dark:bg-surface-500"></video>
-      <canvas ref="canvas" class="bg-gray-500 dark:bg-surface-500"></canvas>
+      <div ref="avatarContainer" />
+      <canvas ref="sourceCanvas" class="bg-gray-500"></canvas>
     </section>
 
     <div ref="controlsElement" />
+    <video ref="videoElement" class="w-0 h-0"></video>
   </div>
+  <Teleport v-if="!initialized" to="body">
+    <div class="absolute bg-[rgba(0,0,0,0.5)] inset-0 flex flex-col items-center justify-center">
+      <PrProgressSpinner stroke-width="6" />
+      <span class="text-white mt-4 text-lg animate-pulse">模型加载中...</span>
+    </div>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
@@ -26,31 +61,31 @@ import * as drawingUtils from '@mediapipe/drawing_utils'
 // import * as controls from '@mediapipe/control_utils'
 // import '@mediapipe/control_utils/control_utils.css'
 import { onMounted, onUnmounted, ref } from 'vue'
+import { PresetModelList } from '@renderer/common/modelConfig'
+import { useThrottleFn } from '@vueuse/core'
+import { Avatar } from '@renderer/three/Avatar'
 
 const videoElement = ref<HTMLVideoElement | null>(null)
-const canvas = ref<HTMLCanvasElement | null>(null)
+const avatarContainer = ref<HTMLCanvasElement | null>(null)
+const sourceCanvas = ref<HTMLCanvasElement | null>(null)
 const container = ref<HTMLDivElement | null>(null)
 const controlsElement = ref<HTMLDivElement | null>(null)
+
 const isCameraStarted = ref(false)
+const showLandmarks = ref(true)
+const initialized = ref(true)
 
-function tuggleCamera() {
-  if (isCameraStarted.value) {
-    camera.stop()
-    isCameraStarted.value = false
-  } else {
-    camera.start()
-    isCameraStarted.value = true
-  }
-}
+const humanModel = ref(PresetModelList[0])
 
+// 处理窗口大小变化
 function handelResize() {
   const width = (container.value!.clientWidth - 8) / 2
   const height = (width / 16) * 9
 
-  canvas.value!.width = width
-  canvas.value!.height = height
-  videoElement.value!.style.width = `${width}px`
-  videoElement.value!.style.height = `${height}px`
+  avatarContainer.value!.style.width = `${width}px`
+  avatarContainer.value!.style.height = `${height}px`
+  sourceCanvas.value!.width = width
+  sourceCanvas.value!.height = height
 
   return {
     width,
@@ -58,12 +93,19 @@ function handelResize() {
   }
 }
 
+// 移除 landmarks 中对应 index 的标记
 function removeElements(landmarks: mpHolistic.NormalizedLandmarkList, elements: number[]) {
   for (const element of elements) {
     delete landmarks[element]
   }
 }
 
+/**
+ * 移除不需要绘制的标记
+ * - 0-10: 面部标记
+ * - 15-22: 双手标记
+ * @param results 检测结果
+ */
 function removeLandmarks(results: mpHolistic.Results) {
   if (results.poseLandmarks) {
     removeElements(
@@ -73,21 +115,24 @@ function removeLandmarks(results: mpHolistic.Results) {
   }
 }
 
+// 连接两个点
 function connect(
   ctx: CanvasRenderingContext2D,
   connectors: Array<[mpHolistic.NormalizedLandmark, mpHolistic.NormalizedLandmark]>
-): void {
-  const canvas = ctx.canvas
+) {
+  const { width, height } = ctx.canvas
+  if (!width || !height) return
   for (const connector of connectors) {
     const from = connector[0]
     const to = connector[1]
     if (from && to) {
+      // 如果两个点的 visibility 都小于 0.1，则不绘制
       if (from.visibility && to.visibility && (from.visibility < 0.1 || to.visibility < 0.1)) {
         continue
       }
       ctx.beginPath()
-      ctx.moveTo(from.x * canvas.width, from.y * canvas.height)
-      ctx.lineTo(to.x * canvas.width, to.y * canvas.height)
+      ctx.moveTo(from.x * width, from.y * height)
+      ctx.lineTo(to.x * width, to.y * height)
       ctx.stroke()
     }
   }
@@ -95,52 +140,60 @@ function connect(
 
 const activeEffect = 'mask'
 // const fpsControl = new controls.FPS()
-let canvasCtx: CanvasRenderingContext2D
-function onResults(results: mpHolistic.Results): void {
-  console.log('🚀 ~ onResults ~ results:', results)
-  if (!canvas.value) return
-  if (!canvasCtx) canvasCtx = canvas.value!.getContext('2d')!
+let sourceCtx: CanvasRenderingContext2D
+function onResults(results: mpHolistic.Results) {
+  !initialized.value && (initialized.value = true)
+  if (!sourceCanvas.value) return
+  if (!sourceCtx) sourceCtx = sourceCanvas.value!.getContext('2d')!
 
-  // 移除不需要绘制的标记
   removeLandmarks(results)
 
   // 更新帧率
   // fpsControl.tick()
 
-  canvasCtx.save()
-  canvasCtx.clearRect(0, 0, canvas.value.width, canvas.value.height)
+  const { width, height } = sourceCanvas.value
 
+  sourceCtx.save()
+  sourceCtx.clearRect(0, 0, width, height)
+
+  // 如果开启了分割，则绘制分割 mask
   if (results.segmentationMask) {
-    canvasCtx.drawImage(results.segmentationMask, 0, 0, canvas.value.width, canvas.value.height)
+    sourceCtx.drawImage(results.segmentationMask, 0, 0, width, height)
 
     // Only overwrite existing pixels.
     if (activeEffect === 'mask' || activeEffect === 'both') {
-      canvasCtx.globalCompositeOperation = 'source-in'
+      sourceCtx.globalCompositeOperation = 'source-in'
       // This can be a color or a texture or whatever...
-      canvasCtx.fillStyle = '#00FF007F'
-      canvasCtx.fillRect(0, 0, canvas.value.width, canvas.value.height)
+      sourceCtx.fillStyle = '#00FF007F'
+      sourceCtx.fillRect(0, 0, width, height)
     } else {
-      canvasCtx.globalCompositeOperation = 'source-out'
-      canvasCtx.fillStyle = '#0000FF7F'
-      canvasCtx.fillRect(0, 0, canvas.value.width, canvas.value.height)
+      sourceCtx.globalCompositeOperation = 'source-out'
+      sourceCtx.fillStyle = '#0000FF7F'
+      sourceCtx.fillRect(0, 0, width, height)
     }
 
     // Only overwrite missing pixels.
-    canvasCtx.globalCompositeOperation = 'destination-atop'
-    canvasCtx.drawImage(results.image, 0, 0, canvas.value.width, canvas.value.height)
+    sourceCtx.globalCompositeOperation = 'destination-atop'
+    sourceCtx.drawImage(results.image, 0, 0, width, height)
 
-    canvasCtx.globalCompositeOperation = 'source-over'
+    sourceCtx.globalCompositeOperation = 'source-over'
   } else {
-    canvasCtx.drawImage(results.image, 0, 0, canvas.value.width, canvas.value.height)
+    sourceCtx.drawImage(results.image, 0, 0, width, height)
   }
 
-  // Connect elbows to hands. Do this first so that the other graphics will draw
-  // on top of these marks.
-  canvasCtx.lineWidth = 5
+  if (showLandmarks.value) drawLandmarks(sourceCtx, results)
+
+  sourceCtx.restore()
+}
+
+// 绘制骨架
+function drawLandmarks(sourceCtx: CanvasRenderingContext2D, results: mpHolistic.Results) {
+  // 先连接手肘与手腕
+  sourceCtx.lineWidth = 5
   if (results.poseLandmarks) {
     if (results.rightHandLandmarks) {
-      canvasCtx.strokeStyle = 'white'
-      connect(canvasCtx, [
+      sourceCtx.strokeStyle = 'white'
+      connect(sourceCtx, [
         [
           results.poseLandmarks[mpHolistic.POSE_LANDMARKS.RIGHT_ELBOW],
           results.rightHandLandmarks[0]
@@ -148,33 +201,33 @@ function onResults(results: mpHolistic.Results): void {
       ])
     }
     if (results.leftHandLandmarks) {
-      canvasCtx.strokeStyle = 'white'
-      connect(canvasCtx, [
+      sourceCtx.strokeStyle = 'white'
+      connect(sourceCtx, [
         [results.poseLandmarks[mpHolistic.POSE_LANDMARKS.LEFT_ELBOW], results.leftHandLandmarks[0]]
       ])
     }
   }
 
   // Pose...
-  drawingUtils.drawConnectors(canvasCtx, results.poseLandmarks, mpHolistic.POSE_CONNECTIONS, {
+  drawingUtils.drawConnectors(sourceCtx, results.poseLandmarks, mpHolistic.POSE_CONNECTIONS, {
     color: 'white'
   })
   drawingUtils.drawLandmarks(
-    canvasCtx,
+    sourceCtx,
     Object.values(mpHolistic.POSE_LANDMARKS_LEFT).map((index) => results.poseLandmarks[index]),
     { visibilityMin: 0.65, color: 'white', fillColor: 'rgb(255,138,0)' }
   )
   drawingUtils.drawLandmarks(
-    canvasCtx,
+    sourceCtx,
     Object.values(mpHolistic.POSE_LANDMARKS_RIGHT).map((index) => results.poseLandmarks[index]),
     { visibilityMin: 0.65, color: 'white', fillColor: 'rgb(0,217,231)' }
   )
 
   // Hands...
-  drawingUtils.drawConnectors(canvasCtx, results.rightHandLandmarks, mpHolistic.HAND_CONNECTIONS, {
+  drawingUtils.drawConnectors(sourceCtx, results.rightHandLandmarks, mpHolistic.HAND_CONNECTIONS, {
     color: 'white'
   })
-  drawingUtils.drawLandmarks(canvasCtx, results.rightHandLandmarks, {
+  drawingUtils.drawLandmarks(sourceCtx, results.rightHandLandmarks, {
     color: 'white',
     fillColor: 'rgb(0,217,231)',
     lineWidth: 2,
@@ -182,10 +235,10 @@ function onResults(results: mpHolistic.Results): void {
       return drawingUtils.lerp(data.from!.z!, -0.15, 0.1, 10, 1)
     }
   })
-  drawingUtils.drawConnectors(canvasCtx, results.leftHandLandmarks, mpHolistic.HAND_CONNECTIONS, {
+  drawingUtils.drawConnectors(sourceCtx, results.leftHandLandmarks, mpHolistic.HAND_CONNECTIONS, {
     color: 'white'
   })
-  drawingUtils.drawLandmarks(canvasCtx, results.leftHandLandmarks, {
+  drawingUtils.drawLandmarks(sourceCtx, results.leftHandLandmarks, {
     color: 'white',
     fillColor: 'rgb(255,138,0)',
     lineWidth: 2,
@@ -195,50 +248,64 @@ function onResults(results: mpHolistic.Results): void {
   })
 
   // Face...
-  drawingUtils.drawConnectors(canvasCtx, results.faceLandmarks, mpHolistic.FACEMESH_TESSELATION, {
+  drawingUtils.drawConnectors(sourceCtx, results.faceLandmarks, mpHolistic.FACEMESH_TESSELATION, {
     color: '#C0C0C070',
     lineWidth: 1
   })
-  drawingUtils.drawConnectors(canvasCtx, results.faceLandmarks, mpHolistic.FACEMESH_RIGHT_EYE, {
+  drawingUtils.drawConnectors(sourceCtx, results.faceLandmarks, mpHolistic.FACEMESH_RIGHT_EYE, {
     color: 'rgb(0,217,231)'
   })
-  drawingUtils.drawConnectors(canvasCtx, results.faceLandmarks, mpHolistic.FACEMESH_RIGHT_EYEBROW, {
+  drawingUtils.drawConnectors(sourceCtx, results.faceLandmarks, mpHolistic.FACEMESH_RIGHT_EYEBROW, {
     color: 'rgb(0,217,231)'
   })
-  drawingUtils.drawConnectors(canvasCtx, results.faceLandmarks, mpHolistic.FACEMESH_LEFT_EYE, {
+  drawingUtils.drawConnectors(sourceCtx, results.faceLandmarks, mpHolistic.FACEMESH_LEFT_EYE, {
     color: 'rgb(255,138,0)'
   })
-  drawingUtils.drawConnectors(canvasCtx, results.faceLandmarks, mpHolistic.FACEMESH_LEFT_EYEBROW, {
+  drawingUtils.drawConnectors(sourceCtx, results.faceLandmarks, mpHolistic.FACEMESH_LEFT_EYEBROW, {
     color: 'rgb(255,138,0)'
   })
-  drawingUtils.drawConnectors(canvasCtx, results.faceLandmarks, mpHolistic.FACEMESH_FACE_OVAL, {
+  drawingUtils.drawConnectors(sourceCtx, results.faceLandmarks, mpHolistic.FACEMESH_FACE_OVAL, {
     color: '#E0E0E0',
     lineWidth: 5
   })
-  drawingUtils.drawConnectors(canvasCtx, results.faceLandmarks, mpHolistic.FACEMESH_LIPS, {
+  drawingUtils.drawConnectors(sourceCtx, results.faceLandmarks, mpHolistic.FACEMESH_LIPS, {
     color: '#E0E0E0',
     lineWidth: 5
   })
-
-  canvasCtx.restore()
 }
 
+// 开启/关闭摄像头
+function tuggleCamera() {
+  if (isCameraStarted.value) {
+    camera.stop()
+    videoElement.value!.srcObject = null
+    sourceCtx?.clearRect(0, 0, sourceCanvas.value!.width, sourceCanvas.value!.height)
+    isCameraStarted.value = false
+    avatar.clear()
+  } else {
+    initialized.value = false
+    camera.start()
+    isCameraStarted.value = true
+    avatar.loadModel(humanModel.value.path)
+  }
+}
+
+let avatar: Avatar
 let camera: Camera
+let onResize: () => void
 const holistic = new mpHolistic.Holistic({
   locateFile: (file) => {
-    return `${import.meta.env.RENDERER_VITE_HOLISTIC_CDN}${file}`
+    return import.meta.env.RENDERER_VITE_HOLISTIC_CDN + file
   }
 })
-
 onMounted(() => {
   if (!videoElement.value) return
-  if (!canvas.value) return
+  if (!avatarContainer.value) return
+  if (!sourceCanvas.value) return
   if (!container.value) return
   if (!controlsElement.value) return
 
   const { width, height } = handelResize()
-  window.addEventListener('resize', handelResize)
-
   camera = new Camera(videoElement.value, {
     onFrame: async () => {
       await holistic.send({ image: videoElement.value! })
@@ -246,6 +313,15 @@ onMounted(() => {
     width,
     height
   })
+
+  avatar = new Avatar(avatarContainer.value)
+  onResize = useThrottleFn(() => {
+    const { width, height } = handelResize()
+    avatar.setSize(width, height)
+  }, 100)
+  window.addEventListener('resize', onResize)
+
+  avatar.start()
 
   // new controls.ControlPanel(controlsElement.value, {
   //   selfieMode: true,
@@ -277,8 +353,8 @@ onMounted(() => {
   //           width = window.innerWidth
   //           height = width * aspect
   //         }
-  //         canvas.value!.width = width
-  //         canvas.value!.height = height
+  //         sourceCanvas.value!.width = width
+  //         sourceCanvas.value!.height = height
   //         await holistic.send({ image: input })
   //       }
   //     }),
@@ -320,6 +396,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   camera.stop()
-  window.removeEventListener('resize', handelResize)
+  window.removeEventListener('resize', onResize)
+  avatar.dispose()
 })
 </script>
