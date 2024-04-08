@@ -1,4 +1,5 @@
 import {
+  Bone,
   DirectionalLight,
   Group,
   HemisphereLight,
@@ -6,11 +7,13 @@ import {
   Object3DEventMap,
   PerspectiveCamera,
   Scene,
+  SkeletonHelper,
   WebGLRenderer
 } from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
+import * as mpHolistic from '@mediapipe/holistic'
 
 export class Base {
   scene: Scene
@@ -21,6 +24,7 @@ export class Base {
   static FAR = 30
 
   model: Group<Object3DEventMap> | null = null
+  bonesMap: Map<number, Bone<Object3DEventMap>> = new Map()
 
   constructor(container: HTMLElement) {
     if (!container) throw new Error('container is required')
@@ -28,7 +32,7 @@ export class Base {
     this.#container = container
     // 创建相机
     this.#camera = new PerspectiveCamera(30, window.innerWidth / window.innerHeight, 0.1, Base.FAR)
-    this.#camera.position.set(3, 1, 3)
+    this.#camera.position.set(0, 1, 5)
 
     // 创建场景
     this.scene = new Scene()
@@ -96,12 +100,12 @@ export class Base {
     const gltf = await loader.loadAsync(path)
     const model = gltf.scene
     // 朝向镜头
-    model.rotation.y = Math.PI * 1.25
+    // model.rotation.y = Math.PI * 1.25
+    model.rotation.y = Math.PI
 
     model.traverse(function (child) {
       if ((<Mesh>child).isMesh) child.castShadow = true
     })
-    // this.scene.add(model)
     return model
   }
 
@@ -111,12 +115,11 @@ export class Base {
     // fbc 格式的模型单位是 cm，需要缩小 100 倍
     model.scale.set(0.01, 0.01, 0.01)
     // 朝向镜头
-    model.rotation.y = Math.PI / 4
+    // model.rotation.y = Math.PI
 
     model.traverse(function (child) {
       if ((<Mesh>child).isMesh) child.castShadow = true
     })
-    // this.scene.add(model)
     return model
   }
 
@@ -131,7 +134,130 @@ export class Base {
     this.scene.add(model)
     this.model = model
 
+    // const skeleton = new SkeletonHelper(model)
+    // this.scene.add(skeleton)
+
+    const bone = model.getObjectByProperty('type', 'Bone') as Bone<Object3DEventMap>
+
     console.log(model)
+    try {
+      this.boneMapping(bone, this.bonesMap)
+    } catch (error) {
+      console.log(error)
+    }
+    for (const bone of this.bonesMap.values()) {
+      console.log(`${bone.userData.tag}: ${bone.name}`)
+    }
+
+    // for (const bone of bones) {
+    //   if (bone.name.toLowerCase().includes('hip')) {
+    //     // const worldVec = model.localToWorld(bone.position.clone())
+    //     // model.position.y = -worldVec.y
+    //     bone.localToWorld(bone.position)
+    //     break
+    //   }
+    // }
+
     return model
+  }
+
+  getHips(bone: Bone<Object3DEventMap>) {
+    if (bone.name.toLowerCase().includes('hip')) return bone
+    for (const child of bone.children as Bone<Object3DEventMap>[]) {
+      const hip = this.getHips(child)
+      if (hip) return hip
+    }
+  }
+
+  deleteInvalidBones(bone: Bone<Object3DEventMap>) {
+    const traverseBone = (
+      bone: Bone<Object3DEventMap>,
+      callback: (bone: Bone<Object3DEventMap>) => void
+    ) => {
+      callback(bone)
+      const children = bone.children
+      for (let i = children.length - 1; i >= 0; i--) {
+        traverseBone(children[i] as Bone<Object3DEventMap>, callback)
+      }
+    }
+    traverseBone(bone, (bone: Bone<Object3DEventMap>) => {
+      const { x, y, z } = bone.position
+      const isValid =
+        bone.visible && (x !== 0 || y !== 0 || z !== 0) && !bone.name.toLowerCase().includes('sec')
+      if (!isValid) bone.removeFromParent()
+    })
+    return bone
+  }
+
+  boneMapping(bone: Bone<Object3DEventMap>, map: Map<number, Bone<Object3DEventMap>>) {
+    const hips = this.deleteInvalidBones(this.getHips(bone).clone())
+
+    const skeleton = new SkeletonHelper(hips)
+    const bones = skeleton.bones
+    console.log(bones)
+
+    const [lHip, spine, rHip] = <Bone<Object3DEventMap>[]>hips.children
+      .filter(({ name }) => !name.toLowerCase().includes('tail')) // 部分模型有尾巴骨骼
+      .sort((a, b) => a.position.x - b.position.x)
+    // 左大腿
+    lHip.userData.tag = 'left hip'
+    map.set(mpHolistic.POSE_LANDMARKS.LEFT_HIP, lHip)
+    // 左膝盖
+    const leftKnee = lHip.children[0] as Bone<Object3DEventMap>
+    leftKnee.userData.tag = 'left knee'
+    map.set(mpHolistic.POSE_LANDMARKS_LEFT.LEFT_KNEE, leftKnee)
+    // 左脚踝
+    const leftAnkle = leftKnee.children[0] as Bone<Object3DEventMap>
+    leftAnkle.userData.tag = 'left ankle'
+    map.set(mpHolistic.POSE_LANDMARKS_LEFT.LEFT_ANKLE, leftAnkle)
+    // 脊椎
+    spine.userData.tag = 'spine'
+    const spine1 = spine.children[0]
+    spine1.userData.tag = 'spine1'
+    const spine2 = spine1.children[0]
+    spine2.userData.tag = 'spine2'
+    const spine2Children = spine2.children.sort((a, b) => a.position.x - b.position.x)
+    const l = spine2Children[0]
+    // const neck = spine2Children[spine2Children.length >> 1]
+    const r = spine2Children[spine2Children.length - 1]
+    // 左肩
+    console.log(spine2)
+    const leftShoulder = l.children[0] as Bone<Object3DEventMap>
+    leftShoulder.userData.tag = 'left shoulder'
+    map.set(mpHolistic.POSE_LANDMARKS.LEFT_SHOULDER, leftShoulder)
+    // 左手肘
+    const leftElbow = leftShoulder.children[0] as Bone<Object3DEventMap>
+    leftElbow.userData.tag = 'left elbow'
+    map.set(mpHolistic.POSE_LANDMARKS_LEFT.LEFT_ELBOW, leftElbow)
+    // 左手腕
+    const leftWrist = leftElbow.children[0] as Bone<Object3DEventMap>
+    leftWrist.userData.tag = 'left wrist'
+    map.set(mpHolistic.POSE_LANDMARKS_LEFT.LEFT_WRIST, leftWrist)
+    // 颈部
+    // neck.userData.tag = 'neck'
+    // neck.children[0].userData.tag = 'head'
+    // 右肩
+    const rightShoulder = r.children[0] as Bone<Object3DEventMap>
+    rightShoulder.userData.tag = 'right shoulder'
+    map.set(mpHolistic.POSE_LANDMARKS.RIGHT_SHOULDER, rightShoulder)
+    // 右手肘
+    const rightElbow = rightShoulder.children[0] as Bone<Object3DEventMap>
+    rightElbow.userData.tag = 'right elbow'
+    map.set(mpHolistic.POSE_LANDMARKS_RIGHT.RIGHT_ELBOW, rightElbow)
+    // 右手腕
+    const rightWrist = rightElbow.children[0] as Bone<Object3DEventMap>
+    rightWrist.userData.tag = 'right wrist'
+    map.set(mpHolistic.POSE_LANDMARKS_RIGHT.RIGHT_WRIST, rightWrist)
+    // 右大腿
+    rHip.userData.tag = 'right hip'
+    map.set(mpHolistic.POSE_LANDMARKS.RIGHT_HIP, rHip)
+    // 右膝盖
+    const rightKnee = rHip.children[0] as Bone<Object3DEventMap>
+    rightKnee.userData.tag = 'right knee'
+    map.set(mpHolistic.POSE_LANDMARKS_RIGHT.RIGHT_KNEE, rightKnee)
+    // 右脚踝
+    const rightAnkle = rightKnee.children[0] as Bone<Object3DEventMap>
+    rightAnkle.userData.tag = 'right ankle'
+    map.set(mpHolistic.POSE_LANDMARKS_RIGHT.RIGHT_ANKLE, rightAnkle)
   }
 }
