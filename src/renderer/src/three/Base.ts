@@ -112,7 +112,7 @@ export class Base {
   async #loadFBXModel(path: string) {
     const loader = new FBXLoader()
     const model = await loader.loadAsync(path)
-    // fbc 格式的模型单位是 cm，需要缩小 100 倍
+    // fbx 格式的模型单位是 cm，需要缩小 100 倍
     model.scale.set(0.01, 0.01, 0.01)
     // 朝向镜头
     // model.rotation.y = Math.PI
@@ -124,6 +124,7 @@ export class Base {
   }
 
   async loadModel(path: string) {
+    if (this.model) this.scene.remove(this.model)
     const extName = path.split('.').pop()
     let model: Group<Object3DEventMap>
     if (extName === 'fbx') {
@@ -143,11 +144,12 @@ export class Base {
     try {
       this.boneMapping(bone, this.bonesMap)
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
-    for (const bone of this.bonesMap.values()) {
-      console.log(`${bone.userData.tag}: ${bone.name}`)
-    }
+    // for (const bone of this.bonesMap.values()) {
+    //   console.log(`${bone.userData.tag}: ${bone.name}`)
+    // }
+    console.log(this.bonesMap)
 
     // for (const bone of bones) {
     //   if (bone.name.toLowerCase().includes('hip')) {
@@ -221,7 +223,6 @@ export class Base {
     // const neck = spine2Children[spine2Children.length >> 1]
     const r = spine2Children[spine2Children.length - 1]
     // 左肩
-    console.log(spine2)
     const leftShoulder = l.children[0] as Bone<Object3DEventMap>
     leftShoulder.userData.tag = 'left shoulder'
     map.set(mpHolistic.POSE_LANDMARKS.LEFT_SHOULDER, leftShoulder)

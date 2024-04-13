@@ -5,19 +5,8 @@
       <div
         class="py-2 grid gap-2 xl:grid-cols-5 lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 grid-cols-1"
       >
-        <div class="min-w-[300px] h-[136px] relative flex-shrink-0">
-          <PrFileUpload :custom-upload="true">
-            <template #header="{ chooseCallback, files }">
-              <i
-                v-show="files.length === 0"
-                class="pi pi-cloud-upload border-2 rounded-full p-4 text-4xl mt-4"
-                @click="chooseCallback()"
-              />
-            </template>
-            <template #empty>
-              <p class="mt-20 text-center">拖动或点击按钮上传模型</p>
-            </template>
-          </PrFileUpload>
+        <div class="flex-shrink-0">
+          <PrFileUpload :custom-upload="true" :show-cancel-button="false" />
         </div>
       </div>
     </section>
