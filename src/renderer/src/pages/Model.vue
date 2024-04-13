@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import { ModelPreview } from '@renderer/three/ModelPreview'
+import { ModelPreview } from '@renderer/common/three/ModelPreview'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { Bone, Group, Object3DEventMap } from 'three'
