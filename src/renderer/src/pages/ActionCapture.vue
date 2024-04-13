@@ -70,7 +70,7 @@
     </section>
     <section ref="container" class="grid grid-cols-2 gap-2 relative">
       <div ref="avatarContainer" />
-      <video ref="videoElement" class="bg-gray-500" src="" loop />
+      <video ref="videoElement" class="bg-gray-500 object-cover" loop />
       <canvas ref="sourceCanvas" class="absolute right-0 top-0"></canvas>
     </section>
 

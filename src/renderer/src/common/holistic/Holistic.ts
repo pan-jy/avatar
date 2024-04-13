@@ -14,9 +14,9 @@ export class Holistic extends mpHolistic.Holistic {
     })
     this.#sourceCanvas = sourceCanvas
     this.#sourceCtx = sourceCanvas.getContext('2d')!
-    this.onResults(() => {
+    this.onResults((results) => {
       try {
-        this.drawResults.bind(this)
+        this.drawResults.call(this, results)
       } catch (error) {
         this.reset()
       }
