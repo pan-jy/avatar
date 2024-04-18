@@ -1,20 +1,20 @@
 import { CameraInterface } from '@mediapipe/camera_utils'
-import { Holistic } from '@renderer/common/holistic/Holistic'
+import type { InputMap } from '@mediapipe/holistic'
 
 export class VideoStream implements CameraInterface {
   #videoElement: HTMLVideoElement
   #animationId = -1
-  #holistic: Holistic
+  #send: (inputs: InputMap) => Promise<void> = async () => {}
 
-  constructor(videoElement: HTMLVideoElement, holistic: Holistic) {
+  constructor(videoElement: HTMLVideoElement, send: (inputs: InputMap) => Promise<void>) {
     this.#videoElement = videoElement
-    this.#holistic = holistic
+    this.#send = send
   }
 
   start() {
     this.#videoElement.play()
     const sendFrame = async () => {
-      await this.#holistic.send({ image: this.#videoElement })
+      await this.#send({ image: this.#videoElement })
       this.#animationId = requestAnimationFrame(sendFrame)
     }
     this.#animationId = requestAnimationFrame(sendFrame)

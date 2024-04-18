@@ -1,12 +1,12 @@
 import * as mpHolistic from '@mediapipe/holistic'
 import * as drawingUtils from '@mediapipe/drawing_utils'
 
-export class Holistic extends mpHolistic.Holistic {
+export class HolisticMoCap extends mpHolistic.Holistic {
   #sourceCanvas: HTMLCanvasElement
   #sourceCtx: CanvasRenderingContext2D
   #showLandmarks = true
 
-  constructor(sourceCanvas: HTMLCanvasElement) {
+  constructor(sourceCanvas: HTMLCanvasElement, animateVRM: (results: mpHolistic.Results) => void) {
     super({
       locateFile: (file) => {
         return import.meta.env.RENDERER_VITE_HOLISTIC_CDN + file
@@ -17,8 +17,10 @@ export class Holistic extends mpHolistic.Holistic {
     this.onResults((results) => {
       try {
         this.drawResults.call(this, results)
+        animateVRM(results)
       } catch (error) {
-        this.reset()
+        console.error(error)
+        // this.reset()
       }
     })
   }
@@ -40,10 +42,10 @@ export class Holistic extends mpHolistic.Holistic {
    * - 15-22: 双手标记
    * @param results 检测结果
    */
-  #removeLandmarks(results: mpHolistic.Results) {
-    if (results.poseLandmarks) {
+  #removeUselessPoseLandmarks(poseLandmarks: mpHolistic.NormalizedLandmarkList) {
+    if (poseLandmarks) {
       this.#removeElements(
-        results.poseLandmarks,
+        poseLandmarks,
         [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 16, 17, 18, 19, 20, 21, 22]
       )
     }
@@ -98,17 +100,19 @@ export class Holistic extends mpHolistic.Holistic {
     }
 
     // Pose...
-    drawingUtils.drawConnectors(sourceCtx, results.poseLandmarks, mpHolistic.POSE_CONNECTIONS, {
+    const poseLandmarks = results.poseLandmarks.slice(0)
+    this.#removeUselessPoseLandmarks(poseLandmarks)
+    drawingUtils.drawConnectors(sourceCtx, poseLandmarks, mpHolistic.POSE_CONNECTIONS, {
       color: 'white'
     })
     drawingUtils.drawLandmarks(
       sourceCtx,
-      Object.values(mpHolistic.POSE_LANDMARKS_LEFT).map((index) => results.poseLandmarks[index]),
+      Object.values(mpHolistic.POSE_LANDMARKS_LEFT).map((index) => poseLandmarks[index]),
       { visibilityMin: 0.65, color: 'white', fillColor: 'rgb(255,138,0)' }
     )
     drawingUtils.drawLandmarks(
       sourceCtx,
-      Object.values(mpHolistic.POSE_LANDMARKS_RIGHT).map((index) => results.poseLandmarks[index]),
+      Object.values(mpHolistic.POSE_LANDMARKS_RIGHT).map((index) => poseLandmarks[index]),
       { visibilityMin: 0.65, color: 'white', fillColor: 'rgb(0,217,231)' }
     )
 
@@ -179,7 +183,7 @@ export class Holistic extends mpHolistic.Holistic {
   }
 
   drawResults(results: mpHolistic.Results) {
-    this.#removeLandmarks(results)
+    // this.#removeLandmarks(results)
 
     // 更新帧率
     // fpsControl.tick()

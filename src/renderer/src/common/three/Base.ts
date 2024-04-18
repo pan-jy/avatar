@@ -1,9 +1,9 @@
 import {
   Bone,
+  Clock,
   DirectionalLight,
   Group,
   HemisphereLight,
-  Mesh,
   Object3DEventMap,
   PerspectiveCamera,
   Scene,
@@ -11,9 +11,10 @@ import {
   WebGLRenderer
 } from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
-import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader'
+// import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import * as mpHolistic from '@mediapipe/holistic'
+import { VRMLoaderPlugin, VRMUtils } from '@pixiv/three-vrm'
 
 export class Base {
   scene: Scene
@@ -95,73 +96,68 @@ export class Base {
     this.scene.add(dirLight, hemiLight)
   }
 
-  async #loadGLTFModel(path: string) {
-    const loader = new GLTFLoader()
-    const gltf = await loader.loadAsync(path)
-    const model = gltf.scene
-    // 朝向镜头
-    // model.rotation.y = Math.PI * 1.25
-    model.rotation.y = Math.PI
-
-    model.traverse(function (child) {
-      if ((<Mesh>child).isMesh) child.castShadow = true
-    })
-    return model
-  }
-
-  async #loadFBXModel(path: string) {
-    const loader = new FBXLoader()
-    const model = await loader.loadAsync(path)
-    // fbx 格式的模型单位是 cm，需要缩小 100 倍
-    model.scale.set(0.01, 0.01, 0.01)
-    // 朝向镜头
-    // model.rotation.y = Math.PI
-
-    model.traverse(function (child) {
-      if ((<Mesh>child).isMesh) child.castShadow = true
-    })
-    return model
-  }
-
-  async loadModel(path: string) {
+  async loadGLTFModel(path: string) {
     if (this.model) this.scene.remove(this.model)
-    const extName = path.split('.').pop()
-    let model: Group<Object3DEventMap>
-    if (extName === 'fbx') {
-      model = await this.#loadFBXModel(path)
-    } else {
-      model = await this.#loadGLTFModel(path)
+
+    const loader = new GLTFLoader()
+    loader.register((parser) => new VRMLoaderPlugin(parser))
+
+    const gltf = await loader.loadAsync(path)
+    VRMUtils.removeUnnecessaryJoints(gltf.scene)
+    const vrm = gltf.userData.vrm
+    // 朝向镜头
+    VRMUtils.rotateVRM0(vrm)
+
+    const clock = new Clock()
+
+    const animate = () => {
+      requestAnimationFrame(animate)
+      if (vrm) vrm.update(clock.getDelta())
     }
-    this.scene.add(model)
+    animate()
+
+    const model = vrm.scene
     this.model = model
 
-    // const skeleton = new SkeletonHelper(model)
-    // this.scene.add(skeleton)
+    this.scene.add(model)
 
-    const bone = model.getObjectByProperty('type', 'Bone') as Bone<Object3DEventMap>
-
-    console.log(model)
-    try {
-      this.boneMapping(bone, this.bonesMap)
-    } catch (error) {
-      console.error(error)
-    }
-    // for (const bone of this.bonesMap.values()) {
-    //   console.log(`${bone.userData.tag}: ${bone.name}`)
-    // }
-    console.log(this.bonesMap)
-
-    // for (const bone of bones) {
-    //   if (bone.name.toLowerCase().includes('hip')) {
-    //     // const worldVec = model.localToWorld(bone.position.clone())
-    //     // model.position.y = -worldVec.y
-    //     bone.localToWorld(bone.position)
-    //     break
-    //   }
-    // }
-
-    return model
+    return vrm
   }
+
+  // async #loadFBXModel(path: string) {
+  //   const loader = new FBXLoader()
+  //   const model = await loader.loadAsync(path)
+  //   // fbx 格式的模型单位是 cm，需要缩小 100 倍
+  //   model.scale.set(0.01, 0.01, 0.01)
+  //   // 朝向镜头
+  //   // model.rotation.y = Math.PI
+  //   return model
+  // }
+
+  // async loadModel(path: string) {
+  //   if (this.model) this.scene.remove(this.model)
+  //   const extName = path.split('.').pop()
+  //   let model: Group<Object3DEventMap>
+  //   if (extName === 'fbx') {
+  //     model = await this.#loadFBXModel(path)
+  //   } else {
+  //     model = await this.loadGLTFModel(path)
+  //   }
+  //   this.model = model
+  //   console.log(model)
+
+  //   this.scene.add(model)
+
+  //   // 获取臀部中心骨骼
+  //   // const hips = this.getHips(model.getObjectByProperty('type', 'Bone') as Bone<Object3DEventMap>)
+  //   // try {
+  //   //   this.boneMapping(hips, this.bonesMap)
+  //   // } catch (error) {
+  //   //   console.error(error)
+  //   // }
+
+  //   return model
+  // }
 
   getHips(bone: Bone<Object3DEventMap>) {
     if (bone.name.toLowerCase().includes('hip')) return bone
@@ -191,8 +187,8 @@ export class Base {
     return bone
   }
 
-  boneMapping(bone: Bone<Object3DEventMap>, map: Map<number, Bone<Object3DEventMap>>) {
-    const hips = this.deleteInvalidBones(this.getHips(bone).clone())
+  boneMapping(hips: Bone<Object3DEventMap>, map: Map<number, Bone<Object3DEventMap>>) {
+    hips = this.deleteInvalidBones(hips)
 
     const skeleton = new SkeletonHelper(hips)
     const bones = skeleton.bones

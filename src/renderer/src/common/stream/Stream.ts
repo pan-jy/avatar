@@ -1,7 +1,7 @@
 import { Camera, CameraInterface } from '@mediapipe/camera_utils'
 import { VideoStream } from './VideoStream'
-import { Holistic } from '@renderer/common/holistic/Holistic'
 import { CameraStream } from './CameraStream'
+import type { InputMap } from '@mediapipe/holistic'
 
 export type StreamType = 'camera' | 'video'
 
@@ -10,23 +10,23 @@ export class Stream implements CameraInterface {
   #camera: Camera | null = null
   #video: VideoStream | null = null
   #stream: Camera | VideoStream | null = null
-  #holistic: Holistic
+  #send: (inputs: InputMap) => Promise<void>
   static CAMERA_RATIO = 16 / 9
 
-  constructor(videoElement: HTMLVideoElement, holistic: Holistic) {
+  constructor(videoElement: HTMLVideoElement, send: (inputs: InputMap) => Promise<void>) {
     this.#videoElement = videoElement
-    this.#holistic = holistic
+    this.#send = send
     this.setStream('camera')
   }
 
   #initCamera() {
     const width = 1080
     const height = width / Stream.CAMERA_RATIO
-    this.#camera = new CameraStream(this.#videoElement, this.#holistic, { width, height })
+    this.#camera = new CameraStream(this.#videoElement, this.#send, { width, height })
   }
 
   #initVideo() {
-    this.#video = new VideoStream(this.#videoElement, this.#holistic)
+    this.#video = new VideoStream(this.#videoElement, this.#send)
   }
 
   setStream(mediaSource: StreamType) {

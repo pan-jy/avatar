@@ -90,8 +90,10 @@ import { PresetModelList } from '@renderer/common/modelConfig'
 import { useThrottleFn } from '@vueuse/core'
 import { Avatar } from '@renderer/common/three/Avatar'
 import { Stream } from '@renderer/common/stream'
+import { HolisticMoCap } from '@renderer/common/mocap/HolisticMoCap'
+import { DriveModel } from '@renderer/common/mocap/DriveModel'
+import type { FileUploadSelectEvent } from 'primevue/fileupload'
 import type { StreamType } from '@renderer/common/stream'
-import { Holistic } from '@renderer/common/holistic/Holistic'
 
 // DOM 元素
 const videoElement = ref<HTMLVideoElement | null>(null)
@@ -133,7 +135,7 @@ function tuggleLandmarks() {
 }
 
 // 选择视频文件
-function handelVideoSelect(e) {
+function handelVideoSelect(e: FileUploadSelectEvent) {
   const file = e.files[0]
   if (!file) return
   hasVideoFile.value = true
@@ -143,15 +145,16 @@ function handelVideoSelect(e) {
 
 // 删除视频文件
 function handelVideoDelete() {
+  stream.stop()
   hasVideoFile.value = false
   workflowStage.value = 'unInit'
   videoElement.value!.src = ''
-  holistic.clearLandMarks()
+  moCap.clearLandMarks()
 }
 
 // 切换媒体源
 function changeMediaSource() {
-  holistic.reset()
+  moCap.reset()
   stream.setStream(mediaSource.value)
 }
 
@@ -161,14 +164,14 @@ async function tuggleCamera() {
     case 'running':
       if (mediaSource.value === 'camera') {
         workflowStage.value = 'unInit'
-        holistic.clearLandMarks()
+        moCap.clearLandMarks()
         // avatar.clear() 后续更换为 reset 姿态而不是清空
       } else workflowStage.value = 'pause'
       stream.stop()
       break
     case 'unInit':
       workflowStage.value = 'loading'
-      await holistic.initialize()
+      await moCap.initialize()
     // eslint-disable-next-line no-fallthrough
     case 'pause':
       await stream.start()
@@ -190,8 +193,9 @@ function initAvatar(container: HTMLCanvasElement) {
   avatar.start()
   watch(
     humanModel,
-    (value) => {
-      avatar.loadModel(value.path)
+    async (value) => {
+      const model = await avatar.loadGLTFModel(value.path)
+      driveModel.setModel(model)
     },
     {
       immediate: true
@@ -199,29 +203,21 @@ function initAvatar(container: HTMLCanvasElement) {
   )
 }
 
-// 初始化视频流
-let stream: Stream
-function initStream(videoElement: HTMLVideoElement) {
-  stream = new Stream(videoElement, holistic)
-}
-
-// 初始化姿态检测
-let holistic: Holistic
-function initHolistic() {
-  holistic = new Holistic(sourceCanvas.value!)
-}
-
+let stream: Stream // 视频流
+let moCap: HolisticMoCap // 人体姿态检测
+let driveModel: DriveModel // 驱动模型
 onMounted(() => {
   handelResize()
-  initHolistic() // 先初始化姿态检测，下面的初始化需要用到
-  initStream(videoElement.value!)
+  driveModel = new DriveModel()
+  moCap = new HolisticMoCap(sourceCanvas.value!, driveModel.animateVRM.bind(driveModel))
+  stream = new Stream(videoElement.value!, moCap.send.bind(moCap))
   initAvatar(avatarContainer.value!)
 })
 
 onUnmounted(() => {
   stream.stop()
   avatar.dispose()
-  holistic.close()
+  moCap.close()
   window.removeEventListener('resize', onResize)
 })
 </script>

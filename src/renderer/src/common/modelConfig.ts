@@ -1,14 +1,14 @@
 export const PresetModelList = [
-  {
-    name: 'Vanguard',
-    path: '/models/fbx/Vanguard.fbx',
-    cover: '/models/covers/Vanguard.png'
-  },
-  {
-    name: 'Mousey',
-    path: '/models/fbx/Mousey.fbx',
-    cover: '/models/covers/Mousey.png'
-  },
+  // {
+  //   name: 'Vanguard',
+  //   path: '/models/fbx/Vanguard.fbx',
+  //   cover: '/models/covers/Vanguard.png'
+  // },
+  // {
+  //   name: 'Mousey',
+  //   path: '/models/fbx/Mousey.fbx',
+  //   cover: '/models/covers/Mousey.png'
+  // },
   {
     name: 'VAL',
     path: '/models/vrm/VAL.vrm',
