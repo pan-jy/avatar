@@ -1,13 +1,13 @@
 import * as Kalidokit from 'kalidokit'
-import * as THREE from 'three'
+import { Euler, Group, Object3D, Object3DEventMap, Quaternion, Vector3 } from 'three'
 import { VRMHumanBoneName, VRMExpressionPresetName, VRM } from '@pixiv/three-vrm'
 
 export class DriveModel {
-  currentVrm: VRM | null = null
-  #oldLookTarget = new THREE.Euler()
+  currentModel: VRM | Group<Object3DEventMap> | null = null
+  #oldLookTarget = new Euler()
 
-  setModel(vrmModel: VRM) {
-    this.currentVrm = vrmModel
+  setModel(vrmModel: VRM | Group<Object3DEventMap>) {
+    this.currentModel = vrmModel
   }
 
   /**
@@ -23,16 +23,17 @@ export class DriveModel {
     dampener = 1,
     lerpAmount = 0.3
   ) {
-    if (!this.currentVrm) return
-    const Part = this.currentVrm.humanoid.getNormalizedBoneNode(name)
+    if (!this.currentModel) return
+    let Part: Object3D<Object3DEventMap> | null
+    if (this.currentModel instanceof VRM) {
+      Part = this.currentModel.humanoid.getNormalizedBoneNode(name)
+    } else {
+      Part = this.currentModel.userData.bonesMap.get(name) ?? null
+    }
     if (!Part) return
 
-    const euler = new THREE.Euler(
-      rotation.x * dampener,
-      rotation.y * dampener,
-      rotation.z * dampener
-    )
-    const quaternion = new THREE.Quaternion().setFromEuler(euler)
+    const euler = new Euler(rotation.x * dampener, rotation.y * dampener, rotation.z * dampener)
+    const quaternion = new Quaternion().setFromEuler(euler)
     Part.quaternion.slerp(quaternion, lerpAmount) // interpolate
   }
 
@@ -49,15 +50,16 @@ export class DriveModel {
     dampener = 1,
     lerpAmount = 0.3
   ) {
-    if (!this.currentVrm) return
-    const Part = this.currentVrm.humanoid.getNormalizedBoneNode(name)
+    if (!this.currentModel) return
+    let Part: Object3D<Object3DEventMap> | null
+    if (this.currentModel instanceof VRM) {
+      Part = this.currentModel.humanoid.getNormalizedBoneNode(name)
+    } else {
+      Part = this.currentModel.userData.bonesMap.get(name) ?? null
+    }
     if (!Part) return
 
-    const vector = new THREE.Vector3(
-      position.x * dampener,
-      position.y * dampener,
-      position.z * dampener
-    )
+    const vector = new Vector3(position.x * dampener, position.y * dampener, position.z * dampener)
     Part.position.lerp(vector, lerpAmount) // interpolate
   }
 
@@ -66,7 +68,7 @@ export class DriveModel {
    * @param riggedFace 带有面部信息的对象
    */
   #rigFace(riggedFace: Kalidokit.TFace) {
-    if (!this.currentVrm) return
+    if (!(this.currentModel instanceof VRM)) return
 
     this.#rigRotation(VRMHumanBoneName.Neck, riggedFace.head, 0.7)
 
@@ -74,7 +76,7 @@ export class DriveModel {
     const lerp = Kalidokit.Vector.lerp
 
     // Blendshapes and Preset Name Schema
-    const Blendshape = this.currentVrm.expressionManager
+    const Blendshape = this.currentModel.expressionManager
     const PresetName = VRMExpressionPresetName
 
     if (!Blendshape) return
@@ -118,19 +120,19 @@ export class DriveModel {
 
     //PUPILS
     //interpolate pupil and keep a copy of the value
-    const lookTarget = new THREE.Euler(
+    const lookTarget = new Euler(
       lerp(this.#oldLookTarget.x, riggedFace.pupil.y, 0.4),
       lerp(this.#oldLookTarget.y, riggedFace.pupil.x, 0.4),
       0,
       'XYZ'
     )
     this.#oldLookTarget.copy(lookTarget)
-    this.currentVrm.lookAt?.applier.applyYawPitch(lookTarget.y, lookTarget.x)
+    this.currentModel.lookAt?.applier.applyYawPitch(lookTarget.y, lookTarget.x)
   }
 
   /* VRM Character Animator */
   animateVRM(results) {
-    if (!this.currentVrm) return
+    if (!this.currentModel) return
 
     // Take the results from `Holistic` and animate character based on its Face, Pose, and Hand Keypoints.
     let riggedPose: Kalidokit.TPose,
@@ -172,6 +174,10 @@ export class DriveModel {
         1,
         0.07
       )
+
+      // riggedPose.LeftUpperLeg.x = -riggedPose.LeftUpperLeg.x
+      // riggedPose.LeftUpperLeg.z = Math.PI + riggedPose.LeftUpperLeg.z
+      // riggedPose.RightUpperLeg.z = Math.PI - riggedPose.RightUpperLeg.z
 
       this.#rigRotation(VRMHumanBoneName.Chest, riggedPose.Spine, 0.25, 0.3)
       this.#rigRotation(VRMHumanBoneName.Spine, riggedPose.Spine, 0.45, 0.3)

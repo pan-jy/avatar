@@ -194,7 +194,8 @@ function initAvatar(container: HTMLCanvasElement) {
   watch(
     humanModel,
     async (value) => {
-      const model = await avatar.loadGLTFModel(value.path)
+      const { path } = value
+      const model = await avatar.loadModel(path)
       driveModel.setModel(model)
     },
     {

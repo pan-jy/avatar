@@ -44,7 +44,8 @@ onMounted(async () => {
     window.addEventListener('resize', onResize)
     // 渲染
     modelPreview.start()
-    model.value = await modelPreview.loadModel(path as string)
+    await modelPreview.loadModel(path as string)
+    model.value = modelPreview.model
   } catch (error) {
     alert(error)
   }

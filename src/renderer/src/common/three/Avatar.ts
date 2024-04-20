@@ -1,5 +1,7 @@
-import { Color } from 'three'
-import { Base } from './Base'
+import { Clock, Color } from 'three'
+import { Base, ModelFileType } from './Base'
+import { VRMLoaderPlugin, VRMUtils, VRM } from '@pixiv/three-vrm'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 
 export class Avatar extends Base {
   constructor(container: HTMLElement) {
@@ -10,5 +12,25 @@ export class Avatar extends Base {
     this.controls.maxDistance = 10
     this.controls.minDistance = 0.5
     this.controls.target.set(0, 1, 0)
+  }
+
+  async loadGLTFModel(path: string, fileType: Exclude<ModelFileType, 'fbx'>) {
+    const loader = new GLTFLoader()
+    fileType === 'vrm' && loader.register((parser) => new VRMLoaderPlugin(parser))
+
+    const gltf = await loader.loadAsync(path)
+
+    if (fileType === 'vrm') {
+      // 优化模型, 提升性能
+      VRMUtils.removeUnnecessaryJoints(gltf.scene)
+      VRMUtils.removeUnnecessaryVertices(gltf.scene)
+      const vrm = gltf.userData.vrm as VRM
+      // 朝向 Y+
+      VRMUtils.rotateVRM0(vrm)
+
+      const clock = new Clock()
+      this.animateCallbacks.push(vrm.update.bind(vrm, clock.getDelta()))
+      return vrm
+    } else return gltf
   }
 }
