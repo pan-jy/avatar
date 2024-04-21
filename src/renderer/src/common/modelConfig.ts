@@ -1,3 +1,5 @@
+import type { TPose } from 'kalidokit'
+
 export const PresetModelList = [
   {
     name: 'Vanguard',
@@ -40,3 +42,18 @@ export const PresetModelList = [
     cover: '/models/covers/Natsuki.png'
   }
 ]
+
+export const FBXAxis: Record<keyof TPose, Array<string>> = {
+  Hips: ['-x', 'y', '-z'],
+  Spine: ['-x', 'y', '-z'],
+  RightUpperArm: ['-z', 'x', '-y'],
+  RightLowerArm: ['-z', 'x', '-y'],
+  RightHand: ['-z', 'x', '-y'],
+  LeftUpperArm: ['z', '-x', '-y'],
+  LeftLowerArm: ['z', '-x', '-y'],
+  LeftHand: ['z', '-x', '-y'],
+  RightUpperLeg: ['x', '-y', '-z'],
+  RightLowerLeg: ['x', '-y', '-z'],
+  LeftUpperLeg: ['x', '-y', '-z'],
+  LeftLowerLeg: ['x', '-y', '-z']
+}

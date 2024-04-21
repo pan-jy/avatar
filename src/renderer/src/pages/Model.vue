@@ -60,7 +60,7 @@ const bones = computed(() => {
   if (!model.value) return []
   const bones: Bone[] = []
   model.value.traverse(function (bone) {
-    if ((bone as Bone).isBone) {
+    if ((bone as Bone).isBone && bone.name) {
       bones.push(bone as Bone)
     }
   })

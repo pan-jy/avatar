@@ -1,6 +1,11 @@
 import * as Kalidokit from 'kalidokit'
 import { Euler, Group, Object3D, Object3DEventMap, Quaternion, Vector3 } from 'three'
 import { VRMHumanBoneName, VRMExpressionPresetName, VRM } from '@pixiv/three-vrm'
+import { FBXAxis } from '@renderer/common/modelConfig'
+
+const getAngle = (axis, idx, rotation) => {
+  return axis[idx].length > 1 ? -rotation[axis[idx][1]] : rotation[axis[idx][0]]
+}
 
 export class DriveModel {
   currentModel: VRM | Group<Object3DEventMap> | null = null
@@ -44,7 +49,7 @@ export class DriveModel {
    * @param dampener 阻尼系数
    * @param lerpAmount 插值系数（用于控制位置的平滑度）
    */
-  #rigPosition(
+  rigPosition(
     name: VRMHumanBoneName,
     position = { x: 0, y: 0, z: 0 },
     dampener = 1,
@@ -163,21 +168,33 @@ export class DriveModel {
         runtime: 'mediapipe'
       })!
 
-      this.#rigRotation(VRMHumanBoneName.Hips, riggedPose.Hips.rotation, 0.7)
-      this.#rigPosition(
-        VRMHumanBoneName.Hips,
-        {
-          x: -riggedPose.Hips.position.x, // Reverse direction
-          y: riggedPose.Hips.position.y + 1, // Add a bit of height
-          z: -riggedPose.Hips.position.z // Reverse direction
-        },
-        1,
-        0.07
-      )
+      if (this.currentModel instanceof VRM) {
+        // this.#rigPosition(
+        //   VRMHumanBoneName.Hips,
+        //   {
+        //     x: -riggedPose.Hips.position.x, // Reverse direction
+        //     y: riggedPose.Hips.position.y + 1, // Add a bit of height
+        //     z: -riggedPose.Hips.position.z // Reverse direction
+        //   },
+        //   1,
+        //   0.07
+        // )
+      } else {
+        const Axis = this.currentModel.userData.type === 'fbx' ? FBXAxis : undefined
+        for (const key in Axis) {
+          let rotation = riggedPose[key]
+          if (key === 'Hips') rotation = riggedPose.Hips.rotation
+          if (!rotation) continue
+          const { x, y, z } = rotation
+          const tempRotation = { x, y, z }
+          const axis = FBXAxis[key]
+          rotation.x = getAngle(axis, 0, tempRotation)
+          rotation.y = getAngle(axis, 1, tempRotation)
+          rotation.z = getAngle(axis, 2, tempRotation)
+        }
+      }
 
-      // riggedPose.LeftUpperLeg.x = -riggedPose.LeftUpperLeg.x
-      // riggedPose.LeftUpperLeg.z = Math.PI + riggedPose.LeftUpperLeg.z
-      // riggedPose.RightUpperLeg.z = Math.PI - riggedPose.RightUpperLeg.z
+      this.#rigRotation(VRMHumanBoneName.Hips, riggedPose.Hips.rotation, 0.7)
 
       this.#rigRotation(VRMHumanBoneName.Chest, riggedPose.Spine, 0.25, 0.3)
       this.#rigRotation(VRMHumanBoneName.Spine, riggedPose.Spine, 0.45, 0.3)

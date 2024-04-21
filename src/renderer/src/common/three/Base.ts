@@ -154,6 +154,7 @@ export class Base {
     this.scene.add(model)
 
     if (fileType !== 'vrm') {
+      ;(<Group<Object3DEventMap>>drivingModel).userData.type = fileType
       const hips = this.#getHips(
         model.getObjectByProperty('type', 'Bone') as Bone<Object3DEventMap>
       )
@@ -267,7 +268,28 @@ export class Base {
     const rightHand = rightLowerArm.children[0]
     map.set(VRMHumanBoneName.RightHand, rightHand)
 
+    for (const bone of map.values()) {
+      if (
+        Math.abs(bone.rotation.x) <= 0.01 &&
+        Math.abs(bone.rotation.y) <= 0.01 &&
+        Math.abs(bone.rotation.z) <= 0.01
+      )
+        continue
+      this.#addTBone(bone)
+    }
+
     this.model!.userData.bonesMap = map
     console.log(map)
+  }
+
+  #addTBone(bone: Object3D<Object3DEventMap>) {
+    const t = new Bone()
+    t.position.copy(bone.position)
+    t.rotation.copy(bone.rotation)
+    bone.position.set(0, 0, 0)
+    bone.rotation.set(0, 0, 0)
+    bone.parent!.children.filter((child) => child !== bone)
+    bone.parent!.add(t)
+    t.add(bone)
   }
 }
