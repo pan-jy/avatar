@@ -40,6 +40,18 @@ export const PresetModelList = [
     name: 'Natsuki',
     path: '/models/vrm/Natsuki.vrm',
     cover: '/models/covers/Natsuki.png'
+  },
+  {
+    name: 'Puer',
+    path: '/models/vrm/PureGirl.vrm'
+  },
+  {
+    name: 'Shirai',
+    path: '/models/vrm/Shirai.vrm'
+  },
+  {
+    name: 'Yukino',
+    path: '/models/vrm/Uniform.vrm'
   }
 ]
 
