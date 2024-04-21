@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import { ModelPreview } from '@renderer/three/ModelPreview'
+import { ModelPreview } from '@renderer/common/three/ModelPreview'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { Bone, Group, Object3DEventMap } from 'three'
@@ -44,7 +44,8 @@ onMounted(async () => {
     window.addEventListener('resize', onResize)
     // 渲染
     modelPreview.start()
-    model.value = await modelPreview.loadModel(path as string)
+    await modelPreview.loadModel(path as string)
+    model.value = modelPreview.model
   } catch (error) {
     alert(error)
   }
@@ -59,7 +60,7 @@ const bones = computed(() => {
   if (!model.value) return []
   const bones: Bone[] = []
   model.value.traverse(function (bone) {
-    if ((bone as Bone).isBone) {
+    if ((bone as Bone).isBone && bone.name) {
       bones.push(bone as Bone)
     }
   })
