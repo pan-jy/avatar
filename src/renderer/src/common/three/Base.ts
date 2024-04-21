@@ -15,7 +15,7 @@ import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { VRMLoaderPlugin, VRMUtils, VRM, VRMHumanBoneName } from '@pixiv/three-vrm'
 
-export type ModelFileType = 'gltf' | 'vrm' | 'fbx'
+export type ModelFileType = 'glb' | 'vrm' | 'fbx'
 
 export class Base {
   scene: Scene
@@ -135,7 +135,7 @@ export class Base {
     }
 
     const fileType = path.split('.').pop()?.toLowerCase()
-    if (fileType !== 'fbx' && fileType !== 'gltf' && fileType !== 'vrm')
+    if (fileType !== 'fbx' && fileType !== 'glb' && fileType !== 'vrm')
       throw new Error('Unsupported file type')
 
     let model: Group<Object3DEventMap>
@@ -188,85 +188,102 @@ export class Base {
       }
     }
     traverseBone(bone, (bone: Bone<Object3DEventMap>) => {
-      const { x, y, z } = bone.position
-      const isValid =
-        bone.visible && (x !== 0 || y !== 0 || z !== 0) && !bone.name.toLowerCase().includes('sec')
+      const isValid = this.#isValideBone(bone)
       if (!isValid) bone.removeFromParent()
     })
     return bone
+  }
+
+  #isValideBone(bone: Bone<Object3DEventMap>) {
+    const { x, y, z } = bone.position
+    return (
+      bone.visible && (x !== 0 || y !== 0 || z !== 0) && !bone.name.toLowerCase().includes('sec')
+    )
   }
 
   boneMapping(
     hips: Bone<Object3DEventMap>,
     map: Map<VRMHumanBoneName, Object3D<Object3DEventMap>>
   ) {
-    hips = this.#deleteInvalidBones(hips)
-    map.set(VRMHumanBoneName.Hips, hips)
+    const tempHips = this.#deleteInvalidBones(hips.clone())
+    const tempMap = new Map<string, VRMHumanBoneName>()
+    tempMap.set(tempHips.name, VRMHumanBoneName.Hips)
 
-    const skeleton = new SkeletonHelper(hips)
+    const skeleton = new SkeletonHelper(tempHips)
     const bones = skeleton.bones
     console.log(bones)
 
-    const [leftUpperLeg, spine, rightUpperLeg] = <Bone<Object3DEventMap>[]>hips.children
-      .filter(({ name }) => !name.toLowerCase().includes('tail')) // 部分模型有尾巴骨骼
-      .sort((a, b) => b.position.x - a.position.x)
+    if (tempHips.children.length !== 3) {
+      tempHips.children = tempHips.children.filter(
+        ({ name }) => name.toLowerCase().includes('leg') || name.toLowerCase().includes('spine')
+      )
+    }
+
+    const [leftUpperLeg, spine, rightUpperLeg] = <Bone<Object3DEventMap>[]>(
+      tempHips.children.sort((a, b) => b.position.x - a.position.x)
+    )
 
     // 脊椎
-    map.set(VRMHumanBoneName.Spine, spine)
+    tempMap.set(spine.name, VRMHumanBoneName.Spine)
     const chest = spine.children[0]
-    map.set(VRMHumanBoneName.Chest, chest)
+    tempMap.set(chest.name, VRMHumanBoneName.Chest)
     const upperChest = chest.children[0]
-    map.set(VRMHumanBoneName.UpperChest, upperChest)
+    tempMap.set(upperChest.name, VRMHumanBoneName.UpperChest)
     const upperChestChildren = upperChest.children.sort((a, b) => b.position.x - a.position.x)
     // 颈部
     const neck = upperChestChildren[upperChestChildren.length >> 1]
-    map.set(VRMHumanBoneName.Neck, neck)
+    tempMap.set(neck.name, VRMHumanBoneName.Neck)
     // 头部
     const head = neck.children[0]
-    map.set(VRMHumanBoneName.Head, head)
+    tempMap.set(head.name, VRMHumanBoneName.Head)
 
     // 左大腿
-    map.set(VRMHumanBoneName.LeftUpperLeg, leftUpperLeg)
+    tempMap.set(leftUpperLeg.name, VRMHumanBoneName.LeftUpperLeg)
     // 左膝盖
     const leftLowerLeg = leftUpperLeg.children[0]
-    map.set(VRMHumanBoneName.LeftLowerLeg, leftLowerLeg)
+    tempMap.set(leftLowerLeg.name, VRMHumanBoneName.LeftLowerLeg)
     // 左脚踝
     const leftFoot = leftLowerLeg.children[0]
-    map.set(VRMHumanBoneName.LeftFoot, leftFoot)
+    tempMap.set(leftFoot.name, VRMHumanBoneName.LeftFoot)
     // 右大腿
-    map.set(VRMHumanBoneName.RightUpperLeg, rightUpperLeg)
+    tempMap.set(rightUpperLeg.name, VRMHumanBoneName.RightUpperLeg)
     // 右膝盖
     const rightLowerLeg = rightUpperLeg.children[0]
-    map.set(VRMHumanBoneName.RightLowerLeg, rightLowerLeg)
+    tempMap.set(rightLowerLeg.name, VRMHumanBoneName.RightLowerLeg)
     // 右脚踝
     const rightFoot = rightLowerLeg.children[0]
-    map.set(VRMHumanBoneName.RightFoot, rightFoot)
+    tempMap.set(rightFoot.name, VRMHumanBoneName.RightFoot)
 
     // 左肩
     const leftShoulder = upperChestChildren[0]
-    map.set(VRMHumanBoneName.LeftShoulder, leftShoulder)
+    tempMap.set(leftShoulder.name, VRMHumanBoneName.LeftShoulder)
     // 左上臂
     const leftUpperArm = leftShoulder.children[0]
-    map.set(VRMHumanBoneName.LeftUpperArm, leftUpperArm)
+    tempMap.set(leftUpperArm.name, VRMHumanBoneName.LeftUpperArm)
     // 左手肘
     const leftLowerArm = leftUpperArm.children[0]
-    map.set(VRMHumanBoneName.LeftLowerArm, leftLowerArm)
+    tempMap.set(leftLowerArm.name, VRMHumanBoneName.LeftLowerArm)
     // 左手腕
     const leftHand = leftLowerArm.children[0]
-    map.set(VRMHumanBoneName.LeftHand, leftHand)
+    tempMap.set(leftHand.name, VRMHumanBoneName.LeftHand)
 
     // 右肩
     const rightShoulder = upperChestChildren[upperChestChildren.length - 1]
-    map.set(VRMHumanBoneName.RightShoulder, rightShoulder)
+    tempMap.set(rightShoulder.name, VRMHumanBoneName.RightShoulder)
     // 右上臂
     const rightUpperArm = rightShoulder.children[0]
-    map.set(VRMHumanBoneName.RightUpperArm, rightUpperArm)
+    tempMap.set(rightUpperArm.name, VRMHumanBoneName.RightUpperArm)
     // 右手肘
     const rightLowerArm = rightUpperArm.children[0]
-    map.set(VRMHumanBoneName.RightLowerArm, rightLowerArm)
+    tempMap.set(rightLowerArm.name, VRMHumanBoneName.RightLowerArm)
     // 右手腕
     const rightHand = rightLowerArm.children[0]
-    map.set(VRMHumanBoneName.RightHand, rightHand)
+    tempMap.set(rightHand.name, VRMHumanBoneName.RightHand)
+
+    hips.traverse((bone) => {
+      if (tempMap.has(bone.name) && this.#isValideBone(<Bone<Object3DEventMap>>bone))
+        map.set(tempMap.get(bone.name)!, bone)
+    })
 
     for (const bone of map.values()) {
       if (
