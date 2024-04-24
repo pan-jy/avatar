@@ -129,6 +129,7 @@ onUnmounted(() => {
 <template>
   <div ref="avatarContainer" class="w-full h-full" />
   <div
+    v-show="workflowStage === 'running' || workflowStage === 'pause'"
     ref="videoContainer"
     :style="style"
     class="absolute w-[400px] h-[225px] bg-gray-700 rounded-md cursor-grab"

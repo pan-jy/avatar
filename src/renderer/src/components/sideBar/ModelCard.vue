@@ -16,7 +16,7 @@ function handelClick(path: string) {
     v-tooltip.bottom="model.name"
     class="model-card relative w-[100px] h-[100px] rounded-full overflow-hidden flex justify-center items-center border-4 border-white outline bg-white/90"
     :class="
-      active ? 'outline-[7px] outline-primary-400' : 'hover:outline-[5px] hover:outline-white/40'
+      active ? 'outline-[7px] outline-primary-300' : 'hover:outline-[5px] hover:outline-white/40'
     "
   >
     <PrImage
@@ -30,7 +30,7 @@ function handelClick(path: string) {
       class="absolute items-center justify-center flex-wrap text-xs text-center bg-black/50 text-white bottom-0 w-full h-2/5 cursor-pointer hidden"
       @click.stop="handelClick(model.path)"
     >
-      新窗口查看
+      查看详情
     </div>
   </div>
 </template>
