@@ -14,6 +14,8 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { VRMLoaderPlugin, VRMUtils, VRM, VRMHumanBoneName } from '@pixiv/three-vrm'
+import { useElementSize, useThrottleFn } from '@vueuse/core'
+import { watch } from 'vue'
 
 export type ModelFileType = 'glb' | 'vrm' | 'fbx'
 
@@ -47,9 +49,8 @@ export class Base {
     this.#renderer = new WebGLRenderer({ antialias: true }) // 抗锯齿
     this.#renderer.shadowMap.enabled = true
 
-    // 初始化窗口大小
-    const { clientWidth: width, clientHeight: height } = this.#container
-    this.setSize(width, height)
+    // 监听容器大小
+    this.watchSize()
 
     // 创建控制器
     this.controls = new OrbitControls(this.#camera, this.#renderer.domElement)
@@ -58,15 +59,27 @@ export class Base {
     container.append(this.#renderer.domElement)
   }
 
-  setSize(width = this.#container.clientWidth, height = this.#container.clientHeight) {
-    // 更新相机的宽高比
-    this.#camera.aspect = width / height
-    // 更新相机的投影矩阵
-    this.#camera.updateProjectionMatrix()
-    // 更新渲染器的大小
-    this.#renderer.setSize(width, height)
-    // 更新渲染器的像素比
-    this.#renderer.setPixelRatio(window.devicePixelRatio)
+  watchSize() {
+    const { width, height } = useElementSize(this.#container)
+    const containerSize = [width, height]
+    watch(
+      containerSize,
+      useThrottleFn(
+        ([width, height]) => {
+          // 更新相机的宽高比
+          this.#camera.aspect = width / height
+          // 更新相机的投影矩阵
+          this.#camera.updateProjectionMatrix()
+          // 更新渲染器的大小
+          this.#renderer.setSize(width, height)
+          // 更新渲染器的像素比
+          this.#renderer.setPixelRatio(window.devicePixelRatio)
+        },
+        300,
+        true
+      ),
+      { immediate: true }
+    )
   }
 
   start() {

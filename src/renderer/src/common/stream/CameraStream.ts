@@ -1,27 +1,32 @@
-import { CameraInterface } from '@mediapipe/camera_utils'
-import type { InputMap } from '@mediapipe/holistic'
+import { SendFunction } from './Stream'
 
-export class CameraStream implements CameraInterface {
+export type CameraConfig = { mediaSource: 'camera'; deviceId: string }
+
+export class CameraStream {
   #videoElement: HTMLVideoElement
   #animationId = -1
-  #options: { width: number; height: number }
   #stream: MediaStream | null = null
-  #send: (inputs: InputMap) => Promise<void> = async () => {}
+  #send: SendFunction = async () => {}
+  static CAMERA_RATIO = 16 / 9
+  width = 1080
+  height = this.width / CameraStream.CAMERA_RATIO
 
-  constructor(
-    videoElement: HTMLVideoElement,
-    send: (inputs: InputMap) => Promise<void>,
-    options: { width: number; height: number }
-  ) {
+  constructor(videoElement: HTMLVideoElement, send: SendFunction) {
     this.#videoElement = videoElement
     this.#send = send
-    this.#options = options
   }
 
-  async start() {
+  async start({ deviceId }: CameraConfig) {
     // 打开摄像头
-    this.#stream = await window.navigator.mediaDevices.getUserMedia({ video: this.#options })
+    this.#stream = await window.navigator.mediaDevices.getUserMedia({
+      video: {
+        deviceId,
+        width: this.width,
+        height: this.height
+      }
+    })
     this.#videoElement.srcObject = this.#stream
+
     this.#videoElement.onloadedmetadata = () => {
       this.#videoElement.play()
       const sendFrame = async () => {

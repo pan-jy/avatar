@@ -2,8 +2,6 @@
   <router-view />
 </template>
 
-<script setup lang="ts"></script>
-
 <style>
 @tailwind base;
 @tailwind components;
@@ -14,8 +12,7 @@ body,
 #app {
   width: 100%;
   height: 100%;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 * {
@@ -27,5 +24,29 @@ body,
 
 .pi {
   line-height: normal !important;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgb(179, 177, 177);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgb(136, 136, 136);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(100, 100, 100);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: rgb(68, 68, 68);
+  border-radius: 10px;
 }
 </style>

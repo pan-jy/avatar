@@ -1,29 +1,36 @@
-import { CameraInterface } from '@mediapipe/camera_utils'
-import type { InputMap } from '@mediapipe/holistic'
+import { SendFunction } from './Stream'
 
-export class VideoStream implements CameraInterface {
+export type VideoConfig = { mediaSource: 'video'; videoFile: File }
+
+export class VideoStream {
   #videoElement: HTMLVideoElement
   #animationId = -1
-  #send: (inputs: InputMap) => Promise<void> = async () => {}
+  #send: SendFunction = async () => {}
 
-  constructor(videoElement: HTMLVideoElement, send: (inputs: InputMap) => Promise<void>) {
+  constructor(videoElement: HTMLVideoElement, send: SendFunction) {
     this.#videoElement = videoElement
     this.#send = send
   }
 
-  start() {
-    this.#videoElement.play()
-    const sendFrame = async () => {
-      await this.#send({ image: this.#videoElement })
+  async start({ videoFile }: VideoConfig): Promise<void> {
+    const url = URL.createObjectURL(videoFile)
+    this.#videoElement.src = url
+
+    this.#videoElement.onloadedmetadata = () => {
+      this.#videoElement.play()
+      const sendFrame = async () => {
+        await this.#send({ image: this.#videoElement })
+        this.#animationId = requestAnimationFrame(sendFrame)
+      }
       this.#animationId = requestAnimationFrame(sendFrame)
     }
-    this.#animationId = requestAnimationFrame(sendFrame)
-    return Promise.resolve()
   }
 
   stop() {
-    this.#videoElement.pause()
     cancelAnimationFrame(this.#animationId)
+    this.#videoElement.pause()
+    this.#videoElement.src = ''
+    this.#videoElement.onloadedmetadata = null
     return Promise.resolve()
   }
 }
