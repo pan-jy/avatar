@@ -40,4 +40,12 @@ export class Avatar extends Base {
       return vrm
     } else return gltf
   }
+
+  forwardStream() {
+    const canvas = this.renderer.domElement
+    const stream = canvas.captureStream()
+    const pc = new RTCPeerConnection()
+    const sender = pc.addTrack(stream.getVideoTracks()[0], stream)
+    console.log(sender)
+  }
 }

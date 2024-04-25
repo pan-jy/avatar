@@ -176,7 +176,11 @@ onUnmounted(() => {
     >
       <i class="pi pi-palette text-xl" />
     </button>
-    <button v-tooltip.top="'Call a friend'" class="absolute rounded-full w-12 h-12 right-3 top-2">
+    <button
+      v-tooltip.top="'Call a friend'"
+      class="absolute rounded-full w-12 h-12 right-3 top-2"
+      @click="avatar.forwardStream"
+    >
       <i class="pi pi-whatsapp text-xl" />
     </button>
     <svg

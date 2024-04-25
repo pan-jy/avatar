@@ -23,8 +23,8 @@ export class Base {
   scene: Scene
   controls: OrbitControls
   #camera: PerspectiveCamera
-  #renderer: WebGLRenderer
   #container: HTMLElement
+  renderer: WebGLRenderer
   animateCallbacks: Array<() => void> = []
   static FAR = 30
 
@@ -46,17 +46,17 @@ export class Base {
     this.#createLights()
 
     // 创建 WebGLRenderer
-    this.#renderer = new WebGLRenderer({ antialias: true }) // 抗锯齿
-    this.#renderer.shadowMap.enabled = true
+    this.renderer = new WebGLRenderer({ antialias: true }) // 抗锯齿
+    this.renderer.shadowMap.enabled = true
 
     // 监听容器大小
     this.watchSize()
 
     // 创建控制器
-    this.controls = new OrbitControls(this.#camera, this.#renderer.domElement)
+    this.controls = new OrbitControls(this.#camera, this.renderer.domElement)
 
     // 将渲染器的 canvas 添加到容器中
-    container.append(this.#renderer.domElement)
+    container.append(this.renderer.domElement)
   }
 
   watchSize() {
@@ -71,9 +71,9 @@ export class Base {
           // 更新相机的投影矩阵
           this.#camera.updateProjectionMatrix()
           // 更新渲染器的大小
-          this.#renderer.setSize(width, height)
+          this.renderer.setSize(width, height)
           // 更新渲染器的像素比
-          this.#renderer.setPixelRatio(window.devicePixelRatio)
+          this.renderer.setPixelRatio(window.devicePixelRatio)
         },
         300,
         true
@@ -83,9 +83,9 @@ export class Base {
   }
 
   start() {
-    this.#renderer.setAnimationLoop(() => {
+    this.renderer.setAnimationLoop(() => {
       this.controls.update()
-      this.#renderer.render(this.scene, this.#camera)
+      this.renderer.render(this.scene, this.#camera)
       this.animateCallbacks.forEach((callback) => callback())
     })
   }
@@ -96,8 +96,8 @@ export class Base {
   }
 
   dispose() {
-    this.#renderer.domElement.remove()
-    this.#renderer.dispose()
+    this.renderer.domElement.remove()
+    this.renderer.dispose()
     this.controls.dispose()
   }
 
