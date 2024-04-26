@@ -12,7 +12,7 @@ const avatar = defineModel<ModelInfo>({
 
 <template>
   <div class="flex flex-col gap-4">
-    <ModelCard
+    <ModelItem
       v-for="model in modelList"
       :key="model.path"
       :model="model"

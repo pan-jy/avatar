@@ -1,25 +1,55 @@
-import { AxesHelper, Clock, Color, GridHelper } from 'three'
+import { Clock, Color, TextureLoader } from 'three'
 import { Base, ModelFileType } from './Base'
 import { VRMLoaderPlugin, VRMUtils, VRM } from '@pixiv/three-vrm'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
-import { ModelPreview } from './ModelPreview'
 import io from 'socket.io-client'
 
+export enum BackgroundType {
+  '2d',
+  '3d',
+  'color'
+}
+
+export type BackgroundConfig = { type: BackgroundType; value?: string }
+
 export class Avatar extends Base {
+  backgroundConfig: BackgroundConfig | null = null
+
   constructor(container: HTMLElement) {
     super(container)
-    this.scene.background = new Color('#6b7280')
+
+    this.initBackground()
 
     // 设置控制器
     this.controls.maxDistance = 10
     this.controls.minDistance = 0.5
     this.controls.target.set(0, 1, 0)
+  }
 
-    // 添加坐标轴、网格
-    this.scene.add(
-      new AxesHelper(ModelPreview.FAR),
-      new GridHelper(ModelPreview.FAR, ModelPreview.FAR)
-    )
+  async initBackground() {
+    let config = await window.electron.ipcRenderer.invoke('get-store', 'background')
+    if (!config) config = { type: BackgroundType['2d'], value: '/background/morning_bg.jpg' }
+    this.setBackground(config)
+    this.backgroundConfig = config
+  }
+
+  async getBackgroundConfig(): Promise<BackgroundConfig> {
+    if (!this.backgroundConfig) await this.initBackground()
+    return this.backgroundConfig!
+  }
+
+  setBackground({ type, value }: BackgroundConfig) {
+    if (type === BackgroundType.color) {
+      this.renderer.setClearColor(new Color(value))
+    } else if (type === BackgroundType['2d']) {
+      if (!value) this.renderer.setClearColor(new Color(0x000000), 0)
+      else {
+        const textureLoader = new TextureLoader()
+        const texture = textureLoader.load(value)
+        this.scene.background = texture
+      }
+    }
+    window.electron.ipcRenderer.invoke('set-store', 'background', { type, value })
   }
 
   async loadGLTFModel(path: string, fileType: Exclude<ModelFileType, 'fbx'>) {

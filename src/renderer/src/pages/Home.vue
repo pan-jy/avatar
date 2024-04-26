@@ -6,7 +6,7 @@ import { Avatar } from '@renderer/common/three/Avatar'
 import { Stream, StreamConfig } from '@renderer/common/stream'
 import { HolisticMoCap } from '@renderer/common/mocap/HolisticMoCap'
 import { DriveModel } from '@renderer/common/mocap/DriveModel'
-import SelectModel from '@renderer/components/sideBar/SelectModel.vue'
+import SelectModel from '@renderer/components/sideBar/selectModel/SelectModel.vue'
 
 // DOM 元素
 const avatarContainer = ref<HTMLCanvasElement | null>(null)
@@ -52,12 +52,13 @@ const menuItems = computed(() => {
 
 const sideBarsConfig = {
   selectModel: {
-    title: '选择模型',
-    component: SelectModel
+    title: '选择模型'
+  },
+  customBackground: {
+    title: '自定义背景'
   }
 }
 
-// 选择模型
 function changeSideBar(type: string) {
   currentSideBar.value = type
   sideBarVisible.value = true
@@ -98,8 +99,7 @@ function initAvatar(container: HTMLCanvasElement) {
   avatar.start()
   watch(
     humanModel,
-    async (value) => {
-      const { path } = value
+    async ({ path }) => {
       const model = await avatar.loadModel(path)
       driveModel.setModel(model)
     },
@@ -143,11 +143,12 @@ onUnmounted(() => {
     v-model:visible="sideBarVisible"
     :header="sideBarsConfig[currentSideBar].title"
   >
-    <component
-      :is="sideBarsConfig[currentSideBar].component"
+    <SelectModel
+      v-if="currentSideBar === 'selectModel'"
       v-model="humanModel"
       :model-list="PresetModelList"
     />
+    <CustomBackground v-else-if="currentSideBar === 'customBackground'" :avatar="avatar" />
   </PrSidebar>
 
   <MediaSourceDialog v-model:visible="dialogVisible" @confirm="startMoCap" />
@@ -163,11 +164,15 @@ onUnmounted(() => {
     <button
       v-tooltip.top="'模型'"
       class="absolute rounded-full w-12 h-12 left-[17px] bottom-[10px]"
-      @click="() => changeSideBar('selectModel')"
+      @click="changeSideBar('selectModel')"
     >
       <i class="pi pi-prime text-xl" />
     </button>
-    <button v-tooltip.top="'背景'" class="absolute rounded-full w-12 h-12 left-2 bottom-[59px]">
+    <button
+      v-tooltip.top="'背景'"
+      class="absolute rounded-full w-12 h-12 left-2 bottom-[59px]"
+      @click="changeSideBar('customBackground')"
+    >
       <i class="pi pi-images text-xl" />
     </button>
     <button
