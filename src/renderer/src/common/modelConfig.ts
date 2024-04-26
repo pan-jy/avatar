@@ -1,15 +1,15 @@
 import type { TPose } from 'kalidokit'
 
+export interface ModelInfo {
+  path: string
+  name: string
+  cover?: string
+}
+
 export const PresetModelList = [
   {
-    name: 'Vanguard',
-    path: '/models/fbx/Vanguard.fbx',
-    cover: '/models/covers/Vanguard.png'
-  },
-  {
-    name: 'Mousey',
-    path: '/models/fbx/Mousey.fbx',
-    cover: '/models/covers/Mousey.png'
+    name: 'Yukino',
+    path: '/models/vrm/Uniform.vrm'
   },
   {
     name: 'VAL',
@@ -50,8 +50,14 @@ export const PresetModelList = [
     path: '/models/vrm/Shirai.vrm'
   },
   {
-    name: 'Yukino',
-    path: '/models/vrm/Uniform.vrm'
+    name: 'Vanguard',
+    path: '/models/fbx/Vanguard.fbx',
+    cover: '/models/covers/Vanguard.png'
+  },
+  {
+    name: 'Mousey',
+    path: '/models/fbx/Mousey.fbx',
+    cover: '/models/covers/Mousey.png'
   }
 ]
 

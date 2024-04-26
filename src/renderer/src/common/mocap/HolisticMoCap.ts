@@ -19,7 +19,7 @@ export class HolisticMoCap extends mpHolistic.Holistic {
         this.drawResults.call(this, results)
         animateVRM(results)
       } catch (error) {
-        console.error(error)
+        console.warn(error)
         // this.reset()
       }
     })

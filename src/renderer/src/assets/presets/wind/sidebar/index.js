@@ -13,7 +13,7 @@ export default {
 
       // Size
       {
-        'h-full w-full max-w-[28rem]': props.position == 'left' || props.position == 'right',
+        'h-full w-fit max-w-[28rem]': props.position == 'left' || props.position == 'right',
         'h-auto w-full': props.position == 'top' || props.position == 'bottom'
       },
 
@@ -22,7 +22,7 @@ export default {
       'shadow-xl',
 
       // Colors
-      'bg-surface-0 dark:bg-surface-800',
+      'bg-gray-800 dark:bg-surface-800',
       'text-surface-700 dark:text-white/80',
       'dark:border-surface-700',
 
@@ -44,8 +44,8 @@ export default {
       'px-6 pt-6',
 
       // Colors
-      'bg-surface-0 dark:bg-surface-800',
-      'text-surface-700 dark:text-surface-0/80'
+      'bg-gray-800 dark:bg-surface-800',
+      'text-surface-0/80'
     ]
   },
   title: {
@@ -100,10 +100,10 @@ export default {
   content: {
     class: [
       // Spacing and Size
-      'px-6 pb-6',
+      'px-6 py-4',
       'mt-6',
       'h-full',
-      'w-full',
+      'w-fit',
 
       // Growth and Overflow
       'grow',

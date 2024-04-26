@@ -1,52 +1,38 @@
-import { Camera, CameraInterface } from '@mediapipe/camera_utils'
-import { VideoStream } from './VideoStream'
-import { CameraStream } from './CameraStream'
+import { VideoConfig, VideoStream } from './VideoStream'
+import { CameraConfig, CameraStream } from './CameraStream'
 import type { InputMap } from '@mediapipe/holistic'
 
 export type StreamType = 'camera' | 'video'
+export type StreamConfig = CameraConfig | VideoConfig
+export type SendFunction = (inputs: InputMap) => Promise<void>
 
-export class Stream implements CameraInterface {
+export class Stream {
   #videoElement: HTMLVideoElement
-  #camera: Camera | null = null
+  #camera: CameraStream | null = null
   #video: VideoStream | null = null
-  #stream: Camera | VideoStream | null = null
-  #send: (inputs: InputMap) => Promise<void>
-  static CAMERA_RATIO = 16 / 9
+  #stream: CameraStream | VideoStream | null = null
+  #send: SendFunction
 
-  constructor(videoElement: HTMLVideoElement, send: (inputs: InputMap) => Promise<void>) {
+  constructor(videoElement: HTMLVideoElement, send: SendFunction) {
     this.#videoElement = videoElement
     this.#send = send
-    this.setStream('camera')
   }
 
-  #initCamera() {
-    const width = 1080
-    const height = width / Stream.CAMERA_RATIO
-    this.#camera = new CameraStream(this.#videoElement, this.#send, { width, height })
-  }
-
-  #initVideo() {
-    this.#video = new VideoStream(this.#videoElement, this.#send)
-  }
-
-  setStream(mediaSource: StreamType) {
+  start(config: StreamConfig) {
+    const { mediaSource } = config
     if (mediaSource === 'camera') {
-      if (!this.#camera) this.#initCamera()
+      if (!this.#camera) this.#camera = new CameraStream(this.#videoElement, this.#send)
       this.#stream = this.#camera
+      return this.#camera.start(config)
     } else {
-      if (!this.#video) this.#initVideo()
+      if (!this.#video) this.#video = new VideoStream(this.#videoElement, this.#send)
       this.#stream = this.#video
+      return this.#video.start(config)
     }
   }
 
-  start() {
-    if (!this.#stream) return Promise.resolve()
-    return this.#stream.start()
-  }
-
   stop() {
-    if (!this.#stream) return Promise.resolve()
-    this.#stream.stop()
-    return Promise.resolve()
+    if (!this.#stream) return Promise.reject('Stream not set')
+    return this.#stream.stop()
   }
 }

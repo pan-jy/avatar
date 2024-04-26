@@ -13,7 +13,7 @@ export default {
 
         // Sizes & Spacing
         'leading-[normal]',
-        'w-12 h-12 p-0 py-3',
+        'w-8 h-8 p-0 py-3',
 
         // Shapes
         'rounded-full',
@@ -373,7 +373,7 @@ export default {
       'flex items-center justify-center',
 
       // Size
-      'w-12 h-12',
+      'w-8 h-8',
 
       // Shape
       'rounded-full relative overflow-hidden',
