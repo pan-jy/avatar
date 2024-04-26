@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import { PresetModelList } from '@renderer/common/modelConfig'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useDraggable, useWindowSize } from '@vueuse/core'
 import { Avatar } from '@renderer/common/three/Avatar'
 import { Stream, StreamConfig } from '@renderer/common/stream'
@@ -16,7 +15,6 @@ const sourceCanvas = ref<HTMLCanvasElement | null>(null)
 // 状态值
 // const showLandmarks = ref(true)
 const workflowStage = ref<'unInit' | 'loading' | 'running' | 'pause'>('unInit')
-const humanModel = ref(PresetModelList[0])
 const sideBarVisible = ref(false)
 const currentSideBar = ref('')
 const navVisible = ref(true)
@@ -92,31 +90,16 @@ async function stopMoCap() {
   workflowStage.value = 'unInit'
 }
 
-// 初始化人物模型
-let avatar: Avatar
-function initAvatar(container: HTMLCanvasElement) {
-  avatar = new Avatar(container)
-  avatar.start()
-  watch(
-    humanModel,
-    async ({ path }) => {
-      const model = await avatar.loadModel(path)
-      driveModel.setModel(model)
-    },
-    {
-      immediate: true
-    }
-  )
-}
-
 let stream: Stream // 视频流
 let moCap: HolisticMoCap // 人体姿态检测
 let driveModel: DriveModel // 驱动模型
+let avatar: Avatar // 人物模型
 onMounted(() => {
   driveModel = new DriveModel()
   moCap = new HolisticMoCap(sourceCanvas.value!, driveModel.animateVRM.bind(driveModel))
   stream = new Stream(videoElement.value!, moCap.send.bind(moCap))
-  initAvatar(avatarContainer.value!)
+  avatar = new Avatar(avatarContainer.value!, driveModel.setModel.bind(driveModel))
+  avatar.start()
 })
 
 onUnmounted(() => {
@@ -143,11 +126,7 @@ onUnmounted(() => {
     v-model:visible="sideBarVisible"
     :header="sideBarsConfig[currentSideBar].title"
   >
-    <SelectModel
-      v-if="currentSideBar === 'selectModel'"
-      v-model="humanModel"
-      :model-list="PresetModelList"
-    />
+    <SelectModel v-if="currentSideBar === 'selectModel'" :avatar="avatar" />
     <CustomBackground v-else-if="currentSideBar === 'customBackground'" :avatar="avatar" />
   </PrSidebar>
 

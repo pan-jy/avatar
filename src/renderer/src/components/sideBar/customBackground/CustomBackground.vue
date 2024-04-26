@@ -11,7 +11,7 @@ const curTab = ref(0)
 const curBg = ref(backgroungImages[0])
 
 onMounted(async () => {
-  const { type, value } = await props.avatar.getBackgroundConfig()
+  const { type, value } = props.avatar.backgroundConfig
   curTab.value = type
   curBg.value = backgroungImages.find((bg) => bg.src === value) || backgroungImages[0]
 })

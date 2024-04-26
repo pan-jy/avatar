@@ -1,23 +1,33 @@
 <script setup lang="ts">
-import type { ModelInfo } from '@renderer/common/modelConfig'
+import { PresetModelList } from '@renderer/common/modelConfig'
+import type { Avatar } from '@renderer/common/three/Avatar'
+import { onMounted, ref } from 'vue'
 
-defineProps<{
-  modelList: Array<ModelInfo>
+const props = defineProps<{
+  avatar: Avatar
 }>()
 
-const avatar = defineModel<ModelInfo>({
-  required: true
+const curModel = ref(PresetModelList[0])
+
+onMounted(async () => {
+  const { path } = props.avatar.modelInfo
+  curModel.value = PresetModelList.find((model) => model.path === path) || PresetModelList[0]
 })
 </script>
 
 <template>
   <div class="flex flex-col gap-4">
     <ModelItem
-      v-for="model in modelList"
+      v-for="model in PresetModelList"
       :key="model.path"
       :model="model"
-      :active="avatar.path === model.path"
-      @click="avatar = model"
+      :active="curModel.path === model.path"
+      @click="
+        () => {
+          curModel = model
+          avatar.handleModelChange(model)
+        }
+      "
     />
   </div>
 </template>

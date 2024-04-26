@@ -3,6 +3,8 @@ import { Base, ModelFileType } from './Base'
 import { VRMLoaderPlugin, VRMUtils, VRM } from '@pixiv/three-vrm'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import io from 'socket.io-client'
+import { ModelInfo, PresetModelList } from '../modelConfig'
+import { SetDrivingModelFn } from '../mocap/DriveModel'
 
 export enum BackgroundType {
   '2d',
@@ -13,12 +15,20 @@ export enum BackgroundType {
 export type BackgroundConfig = { type: BackgroundType; value?: string }
 
 export class Avatar extends Base {
-  backgroundConfig: BackgroundConfig | null = null
+  backgroundConfig: BackgroundConfig = {
+    type: BackgroundType['2d'],
+    value: '/background/morning_bg.jpg'
+  }
+  modelInfo: ModelInfo = PresetModelList[0]
+  #setDrivingModel: SetDrivingModelFn
 
-  constructor(container: HTMLElement) {
+  constructor(container: HTMLElement, setDrivingModel: SetDrivingModelFn) {
     super(container)
 
     this.initBackground()
+
+    this.initModel()
+    this.#setDrivingModel = setDrivingModel
 
     // 设置控制器
     this.controls.maxDistance = 10
@@ -27,18 +37,13 @@ export class Avatar extends Base {
   }
 
   async initBackground() {
-    let config = await window.electron.ipcRenderer.invoke('get-store', 'background')
-    if (!config) config = { type: BackgroundType['2d'], value: '/background/morning_bg.jpg' }
-    this.setBackground(config)
-    this.backgroundConfig = config
-  }
-
-  async getBackgroundConfig(): Promise<BackgroundConfig> {
-    if (!this.backgroundConfig) await this.initBackground()
-    return this.backgroundConfig!
+    const config = await window.electron.ipcRenderer.invoke('get-store', 'background')
+    if (config) this.backgroundConfig = config
+    this.setBackground(this.backgroundConfig)
   }
 
   setBackground({ type, value }: BackgroundConfig) {
+    window.electron.ipcRenderer.invoke('set-store', 'background', { type, value })
     if (type === BackgroundType.color) {
       this.renderer.setClearColor(new Color(value))
     } else if (type === BackgroundType['2d']) {
@@ -49,7 +54,18 @@ export class Avatar extends Base {
         this.scene.background = texture
       }
     }
-    window.electron.ipcRenderer.invoke('set-store', 'background', { type, value })
+  }
+
+  async initModel() {
+    const modelInfo = await window.electron.ipcRenderer.invoke('get-store', 'modelInfo')
+    if (modelInfo) this.modelInfo = modelInfo
+    this.handleModelChange(this.modelInfo)
+  }
+
+  async handleModelChange(modelInfo: ModelInfo) {
+    window.electron.ipcRenderer.invoke('set-store', 'modelInfo', modelInfo)
+    const model = await this.loadModel(modelInfo.path)
+    this.#setDrivingModel(model)
   }
 
   async loadGLTFModel(path: string, fileType: Exclude<ModelFileType, 'fbx'>) {
