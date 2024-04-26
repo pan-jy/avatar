@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script
+      src="https://cdn.socket.io/4.7.5/socket.io.min.js"
+      integrity="sha384-2huaZvOR9iDzHqslqwpR87isEmrfxqyWOF7hr7BY6KG0+hVKLoEXMPUJw3ynWuhO"
+      crossorigin="anonymous"
+    ></script>
+
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+      /* video {
+        width: 100vw;
+        height: 100vh;
+      } */
+    </style>
+  </head>
+  <body>
+    <video autoplay playsinline muted></video>
+
+    <script>
+      const socket = io('http://localhost:8080')
+
+      const pc = new RTCPeerConnection()
+      pc.ontrack = (e) => {
+        console.log(e)
+        document.querySelector('video').srcObject = e.streams[0]
+      }
+
+      pc.onicecandidate = (e) => {
+        if (e.candidate) {
+          socket.emit('candidate', e.candidate)
+        }
+      }
+
+      socket.on('offer', async (offer) => {
+        await pc.setRemoteDescription(offer)
+        const answer = await pc.createAnswer()
+        await pc.setLocalDescription(answer)
+        socket.emit('answer', answer)
+      })
+
+      socket.on('candidate', async (candidate) => {
+        await pc.addIceCandidate(candidate)
+      })
+    </script>
+  </body>
+</html>

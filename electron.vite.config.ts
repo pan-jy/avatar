@@ -4,10 +4,22 @@ import vue from '@vitejs/plugin-vue'
 import Components from 'unplugin-vue-components/vite'
 import { PrimeVueResolver } from 'unplugin-vue-components/resolvers'
 import { createSvgIconsPlugin } from 'vite-plugin-svg-icons'
+import { viteStaticCopy } from 'vite-plugin-static-copy'
+import { normalizePath } from 'vite'
 
 export default defineConfig({
   main: {
-    plugins: [externalizeDepsPlugin()]
+    plugins: [
+      externalizeDepsPlugin(),
+      viteStaticCopy({
+        targets: [
+          {
+            src: normalizePath(resolve(__dirname, 'src/main/forward/**/*.{html,js}')),
+            dest: 'forward'
+          }
+        ]
+      })
+    ]
   },
   preload: {
     plugins: [externalizeDepsPlugin()]

@@ -2,6 +2,7 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import { closeServer, createServer } from './server'
 
 function createWindow(config?: Electron.BrowserWindowConstructorOptions, path = ''): BrowserWindow {
   // Create the browser window.
@@ -96,4 +97,14 @@ ipcMain.on('close-win', () => {
 
 ipcMain.on('open-dev-tools', () => {
   BrowserWindow.getFocusedWindow()?.webContents.openDevTools()
+})
+
+ipcMain.handle('forward-stream', () => {
+  const port = 8080
+  createServer(port)
+  return port
+})
+
+ipcMain.handle('close-server', () => {
+  closeServer()
 })
