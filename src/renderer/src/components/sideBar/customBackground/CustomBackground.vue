@@ -12,7 +12,6 @@ const curBg = ref(backgroungImages[0][0].src)
 
 const color = ref()
 function get0xRgb(r: number, g: number, b: number) {
-  console.log(r, g, b)
   const R = r.toString(16).padStart(2, '0')
   const G = g.toString(16).padStart(2, '0')
   const B = b.toString(16).padStart(2, '0')
@@ -23,7 +22,7 @@ onMounted(async () => {
   const { type, value } = props.avatar.backgroundConfig
   curTab.value = type
   if (type === 2) {
-    curBg.value = value
+    curBg.value = value // 16进制颜色
   } else {
     curBg.value =
       backgroungImages[type].find((bg) => bg.src === value)?.src || backgroungImages[0][0].src
@@ -54,6 +53,7 @@ onMounted(async () => {
         />
 
         <div
+          v-if="curBg?.startsWith('#')"
           class="text-white text-3xl flex items-center justify-center mt-4 bg-surface-500 rounded-2xl py-4"
         >
           <span class="text-gray-300">#</span>
