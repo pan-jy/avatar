@@ -19,8 +19,6 @@ export default {
   }),
   container: {
     class: [
-      'w-full',
-
       // Flexbox
       'flex',
 
@@ -40,9 +38,8 @@ export default {
   },
   menu: ({ props }) => ({
     class: [
-      'w-full',
       // Flexbox & Alignment
-      'flex items-center justify-around',
+      'flex items-center justify-center',
       {
         'flex-col': props.position == 'left' || props.position == 'right'
       },
@@ -60,22 +57,22 @@ export default {
       'p-2 rounded-md',
 
       // Conditional Scaling
-      // {
-      //   'hover:scale-150': instance.currentIndex === context.index,
-      //   'scale-125':
-      //     instance.currentIndex - 1 === context.index ||
-      //     instance.currentIndex + 1 === context.index,
-      //   'scale-110':
-      //     instance.currentIndex - 2 === context.index || instance.currentIndex + 2 === context.index
-      // },
+      {
+        'hover:scale-150': instance.currentIndex === context.index,
+        'scale-125':
+          instance.currentIndex - 1 === context.index ||
+          instance.currentIndex + 1 === context.index,
+        'scale-110':
+          instance.currentIndex - 2 === context.index || instance.currentIndex + 2 === context.index
+      },
 
-      // // Positioning & Hover States
-      // {
-      //   'origin-bottom hover:mx-6': props.position == 'bottom',
-      //   'origin-top hover:mx-6': props.position == 'top',
-      //   'origin-left hover:my-6': props.position == 'left',
-      //   'origin-right hover:my-6': props.position == 'right'
-      // },
+      // Positioning & Hover States
+      {
+        'origin-bottom hover:mx-6': props.position == 'bottom',
+        'origin-top hover:mx-6': props.position == 'top',
+        'origin-left hover:my-6': props.position == 'left',
+        'origin-right hover:my-6': props.position == 'right'
+      },
 
       // Transitions & Transform
       'transition-all duration-200 ease-cubic-bezier-will-change-transform transform'

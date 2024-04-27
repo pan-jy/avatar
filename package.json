@@ -29,7 +29,6 @@
     "@mediapipe/holistic": "^0.5.1675471629",
     "@pixiv/three-vrm": "^2.1.1",
     "@vueuse/core": "^10.9.0",
-    "electron-store": "^8.2.0",
     "electron-updater": "^6.1.7",
     "express": "^4.19.2",
     "fast-glob": "^3.3.2",

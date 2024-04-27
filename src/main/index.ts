@@ -3,7 +3,6 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { closeServer, createServer } from './server'
-import Store from 'electron-store'
 
 function createWindow(config?: Electron.BrowserWindowConstructorOptions, path = ''): BrowserWindow {
   // Create the browser window.
@@ -100,27 +99,12 @@ ipcMain.on('open-dev-tools', () => {
   BrowserWindow.getFocusedWindow()?.webContents.openDevTools()
 })
 
-// 转发
 ipcMain.handle('forward-stream', () => {
   const port = 8080
   createServer(port)
   return port
 })
+
 ipcMain.handle('close-server', () => {
   closeServer()
-})
-
-// 持久化
-const store = new Store()
-
-ipcMain.handle('get-store', (_, key: string) => {
-  return store.get(key)
-})
-
-ipcMain.handle('set-store', (_, key: string, value: unknown) => {
-  store.set(key, value)
-})
-
-ipcMain.handle('delete-store', (_, key: string) => {
-  store.delete(key)
 })
