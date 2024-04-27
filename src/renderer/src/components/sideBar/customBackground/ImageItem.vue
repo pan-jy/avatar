@@ -10,7 +10,7 @@ defineProps<{
 <template>
   <div
     v-tooltip.bottom="bg.name"
-    class="w-[130px] h-[130px] rounded-2xl overflow-hidden flex justify-center items-center border-4 border-white outline bg-white/90"
+    class="rounded-2xl overflow-hidden flex justify-center items-center border-4 border-white outline bg-white/90"
     :class="
       active ? 'outline-[7px] outline-primary-300' : 'hover:outline-[5px] hover:outline-white/40'
     "

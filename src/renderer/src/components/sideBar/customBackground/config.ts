@@ -50,3 +50,18 @@ export const backgroungImages: BackgroundImage[][] = [
     }
   ]
 ]
+
+export const tabs = [
+  {
+    label: '2D',
+    icon: 'bg-2D'
+  },
+  {
+    label: '3D',
+    icon: 'bg-3D'
+  },
+  {
+    label: '颜色',
+    icon: 'bg-palette'
+  }
+]
