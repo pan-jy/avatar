@@ -17,14 +17,14 @@ defineProps<{
   >
     <PrImage
       v-if="bg.src"
-      :src="bg.src"
+      :src="bg.cover ?? bg.src"
       :alt="bg.name"
       class="w-full h-full"
       image-class="h-full object-cover"
     />
     <div
       v-else
-      class="w-full h-full bg-[url('/background/transparent.png')] bg-[length:20px]"
+      class="w-full h-full bg-[url('/background/2d/transparent.png')] bg-[length:20px]"
     ></div>
   </div>
 </template>

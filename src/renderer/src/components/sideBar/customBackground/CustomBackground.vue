@@ -8,12 +8,12 @@ const props = defineProps<{
 }>()
 
 const curTab = ref(0)
-const curBg = ref(backgroungImages[0])
+const curBg = ref(backgroungImages[0][0])
 
 onMounted(async () => {
   const { type, value } = props.avatar.backgroundConfig
   curTab.value = type
-  curBg.value = backgroungImages.find((bg) => bg.src === value) || backgroungImages[0]
+  curBg.value = backgroungImages[type].find((bg) => bg.src === value) || backgroungImages[0][0]
 })
 
 const tabs = [
@@ -35,9 +35,10 @@ const tabs = [
 <template>
   <div class="w-[150px] h-full">
     <div class="w-full">
-      <div v-if="curTab === 0" class="flex flex-col gap-4 items-center after:h-[60px]">
+      <div v-if="curTab === 2"></div>
+      <div v-else class="flex flex-col gap-4 items-center after:h-[60px]">
         <ImageItem
-          v-for="bg in backgroungImages"
+          v-for="bg in backgroungImages[curTab]"
           :key="bg.src"
           :bg="bg"
           :active="curBg.src === bg.src"

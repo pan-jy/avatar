@@ -1,4 +1,4 @@
-import { Clock, Color, TextureLoader } from 'three'
+import { Clock, Color, Mesh, MeshBasicMaterial, SphereGeometry, TextureLoader } from 'three'
 import { Base, ModelFileType } from './Base'
 import { VRMLoaderPlugin, VRMUtils, VRM } from '@pixiv/three-vrm'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
@@ -42,19 +42,31 @@ export class Avatar extends Base {
     this.setBackground(this.backgroundConfig)
   }
 
-  setBackground({ type, value }: BackgroundConfig) {
-    window.electron.ipcRenderer.invoke('set-store', 'background', { type, value })
-    if (type === BackgroundType.color) {
-      this.renderer.setClearColor(new Color(value))
+  setBackground(config: BackgroundConfig) {
+    window.electron.ipcRenderer.invoke('set-store', 'background', config)
+    this.backgroundConfig = config
+    const { type, value } = config
+
+    // 移除原有背景
+    this.scene.background = null
+    const backgroundObj = this.scene.getObjectByName('background')
+    backgroundObj && this.scene.remove(backgroundObj)
+
+    if (type === BackgroundType.color || !value) {
+      if (!value) this.renderer.setClearColor(new Color(0x000000), 0)
+      else this.renderer.setClearColor(new Color(value))
     } else if (type === BackgroundType['2d']) {
-      if (!value) {
-        this.renderer.setClearColor(new Color(0x000000), 0)
-        this.scene.background = null
-      } else {
-        const textureLoader = new TextureLoader()
-        const texture = textureLoader.load(value)
-        this.scene.background = texture
-      }
+      const textureLoader = new TextureLoader()
+      const texture = textureLoader.load(value)
+      this.scene.background = texture
+    } else {
+      const sphereGeometry = new SphereGeometry(15, 50, 50)
+      // 翻转面的方向，使得贴图在球体的内部
+      sphereGeometry.scale(-1, 1, 1)
+      const sphereMaterial = new MeshBasicMaterial({ map: new TextureLoader().load(value) })
+      const sphere = new Mesh(sphereGeometry, sphereMaterial)
+      sphere.name = 'background'
+      this.scene.add(sphere)
     }
   }
 
@@ -66,8 +78,9 @@ export class Avatar extends Base {
 
   async handleModelChange(modelInfo: ModelInfo) {
     window.electron.ipcRenderer.invoke('set-store', 'modelInfo', modelInfo)
-    const model = await this.loadModel(modelInfo.path)
-    this.#setDrivingModel(model)
+    this.modelInfo = modelInfo
+    const drivingModel = await this.loadModel(modelInfo.path)
+    this.#setDrivingModel(drivingModel)
   }
 
   async loadGLTFModel(path: string, fileType: Exclude<ModelFileType, 'fbx'>) {
