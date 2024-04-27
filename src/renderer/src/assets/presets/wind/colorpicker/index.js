@@ -47,7 +47,7 @@ export default {
       'shadow-md border rounded-md',
 
       // Colors
-      'bg-surface-800 border-surface-900 dark:border-surface-600'
+      'bg-surface-500 border-surface-900 dark:border-surface-600'
     ]
   }),
   selector: {

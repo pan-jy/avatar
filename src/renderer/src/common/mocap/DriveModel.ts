@@ -7,6 +7,8 @@ const getAngle = (axis, idx, rotation) => {
   return axis[idx].length > 1 ? -rotation[axis[idx][1]] : rotation[axis[idx][0]]
 }
 
+export type SetDrivingModelFn = (vrmModel: VRM | Group<Object3DEventMap>) => void
+
 export class DriveModel {
   currentModel: VRM | Group<Object3DEventMap> | null = null
   #oldLookTarget = new Euler()

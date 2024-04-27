@@ -1,25 +1,86 @@
-import { AxesHelper, Clock, Color, GridHelper } from 'three'
+import { Clock, Color, Mesh, MeshBasicMaterial, SphereGeometry, TextureLoader } from 'three'
 import { Base, ModelFileType } from './Base'
 import { VRMLoaderPlugin, VRMUtils, VRM } from '@pixiv/three-vrm'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
-import { ModelPreview } from './ModelPreview'
 import io from 'socket.io-client'
+import { ModelInfo, PresetModelList } from '../modelConfig'
+import { SetDrivingModelFn } from '../mocap/DriveModel'
+
+export enum BackgroundType {
+  '2d',
+  '3d',
+  'color'
+}
+
+export type BackgroundConfig = { type: BackgroundType; value?: string }
 
 export class Avatar extends Base {
-  constructor(container: HTMLElement) {
+  backgroundConfig: BackgroundConfig = {
+    type: BackgroundType['2d'],
+    value: '/background/morning_bg.jpg'
+  }
+  modelInfo: ModelInfo = PresetModelList[0]
+  #setDrivingModel: SetDrivingModelFn
+
+  constructor(container: HTMLElement, setDrivingModel: SetDrivingModelFn) {
     super(container)
-    this.scene.background = new Color('#6b7280')
+
+    this.initBackground()
+
+    this.initModel()
+    this.#setDrivingModel = setDrivingModel
 
     // 设置控制器
     this.controls.maxDistance = 10
     this.controls.minDistance = 0.5
     this.controls.target.set(0, 1, 0)
+  }
 
-    // 添加坐标轴、网格
-    this.scene.add(
-      new AxesHelper(ModelPreview.FAR),
-      new GridHelper(ModelPreview.FAR, ModelPreview.FAR)
-    )
+  async initBackground() {
+    const config = await window.electron.ipcRenderer.invoke('get-store', 'background')
+    if (config) this.backgroundConfig = config
+    this.setBackground(this.backgroundConfig)
+  }
+
+  setBackground(config: BackgroundConfig) {
+    window.electron.ipcRenderer.invoke('set-store', 'background', config)
+    this.backgroundConfig = config
+    const { type, value } = config
+
+    // 移除原有背景
+    this.scene.background = null
+    const backgroundObj = this.scene.getObjectByName('background')
+    backgroundObj && this.scene.remove(backgroundObj)
+
+    if (type === BackgroundType.color || !value) {
+      if (!value) this.renderer.setClearColor(new Color(0x000000), 0)
+      else this.renderer.setClearColor(new Color(value))
+    } else if (type === BackgroundType['2d']) {
+      const textureLoader = new TextureLoader()
+      const texture = textureLoader.load(value)
+      this.scene.background = texture
+    } else {
+      const sphereGeometry = new SphereGeometry(15, 50, 50)
+      // 翻转面的方向，使得贴图在球体的内部
+      sphereGeometry.scale(-1, 1, 1)
+      const sphereMaterial = new MeshBasicMaterial({ map: new TextureLoader().load(value) })
+      const sphere = new Mesh(sphereGeometry, sphereMaterial)
+      sphere.name = 'background'
+      this.scene.add(sphere)
+    }
+  }
+
+  async initModel() {
+    const modelInfo = await window.electron.ipcRenderer.invoke('get-store', 'modelInfo')
+    if (modelInfo) this.modelInfo = modelInfo
+    this.handleModelChange(this.modelInfo)
+  }
+
+  async handleModelChange(modelInfo: ModelInfo) {
+    window.electron.ipcRenderer.invoke('set-store', 'modelInfo', modelInfo)
+    this.modelInfo = modelInfo
+    const drivingModel = await this.loadModel(modelInfo.path)
+    this.#setDrivingModel(drivingModel)
   }
 
   async loadGLTFModel(path: string, fileType: Exclude<ModelFileType, 'fbx'>) {
