@@ -47,8 +47,10 @@ export class Avatar extends Base {
     if (type === BackgroundType.color) {
       this.renderer.setClearColor(new Color(value))
     } else if (type === BackgroundType['2d']) {
-      if (!value) this.renderer.setClearColor(new Color(0x000000), 0)
-      else {
+      if (!value) {
+        this.renderer.setClearColor(new Color(0x000000), 0)
+        this.scene.background = null
+      } else {
         const textureLoader = new TextureLoader()
         const texture = textureLoader.load(value)
         this.scene.background = texture
