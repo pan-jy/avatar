@@ -6,6 +6,7 @@ import { Stream, StreamConfig } from '@renderer/common/stream'
 import { HolisticMoCap } from '@renderer/common/mocap/HolisticMoCap'
 import { DriveModel } from '@renderer/common/mocap/DriveModel'
 import SelectModel from '@renderer/components/sideBar/selectModel/SelectModel.vue'
+import CustomBackground from '@renderer/components/sideBar/customBackground/CustomBackground.vue'
 
 // DOM 元素
 const avatarContainer = ref<HTMLCanvasElement | null>(null)
@@ -15,8 +16,6 @@ const sourceCanvas = ref<HTMLCanvasElement | null>(null)
 // 状态值
 // const showLandmarks = ref(true)
 const workflowStage = ref<'unInit' | 'loading' | 'running' | 'pause'>('unInit')
-const sideBarVisible = ref(false)
-const currentSideBar = ref('')
 const navVisible = ref(true)
 const dialogVisible = ref(false)
 
@@ -48,16 +47,20 @@ const menuItems = computed(() => {
   ]
 })
 
-const sideBarsConfig = {
+const sideBars = {
   selectModel: {
-    title: '选择模型'
+    title: '选择模型',
+    component: SelectModel
   },
   customBackground: {
-    title: '自定义背景'
+    title: '自定义背景',
+    component: CustomBackground
   }
 }
-
-function changeSideBar(type: string) {
+type SideBarType = keyof typeof sideBars
+const sideBarVisible = ref(false)
+const currentSideBar = ref<SideBarType>('selectModel')
+function changeSideBar(type: SideBarType) {
   currentSideBar.value = type
   sideBarVisible.value = true
 }
@@ -124,89 +127,52 @@ onUnmounted(() => {
   <PrSidebar
     v-if="currentSideBar"
     v-model:visible="sideBarVisible"
-    :header="sideBarsConfig[currentSideBar].title"
+    :header="sideBars[currentSideBar].title"
   >
-    <SelectModel v-if="currentSideBar === 'selectModel'" :avatar="avatar" />
-    <CustomBackground v-else-if="currentSideBar === 'customBackground'" :avatar="avatar" />
+    <component :is="sideBars[currentSideBar].component" :avatar="avatar" />
   </PrSidebar>
 
   <MediaSourceDialog v-model:visible="dialogVisible" @confirm="startMoCap" />
 
-  <nav v-show="navVisible" class="fixed w-[160px] h-[160px] right-2 bottom-2 text-white">
-    <button
-      v-tooltip.top="workflowStage === 'running' ? '暂停' : '开始'"
-      class="absolute rounded-full w-20 h-20 right-4 bottom-[22px] bg-primary-500"
-      @click="handelCameraClick"
-    >
-      <i class="pi text-5xl" :class="workflowStage === 'running' ? 'pi-pause' : 'pi-camera'" />
-    </button>
-    <button
-      v-tooltip.top="'模型'"
-      class="absolute rounded-full w-12 h-12 left-[17px] bottom-[10px]"
-      @click="changeSideBar('selectModel')"
-    >
-      <i class="pi pi-prime text-xl" />
-    </button>
-    <button
-      v-tooltip.top="'背景'"
-      class="absolute rounded-full w-12 h-12 left-2 bottom-[59px]"
-      @click="changeSideBar('customBackground')"
-    >
-      <i class="pi pi-images text-xl" />
-    </button>
-    <button
-      v-tooltip.top="'Backgrounds'"
-      class="absolute rounded-full w-12 h-12 left-[45px] top-[10px]"
-    >
-      <i class="pi pi-palette text-xl" />
-    </button>
-    <button
-      v-tooltip.top="'媒体流转发'"
-      class="absolute rounded-full w-12 h-12 right-3 top-2"
-      @click="avatar.forwardStream"
-    >
-      <i class="pi pi-send text-xl" />
-    </button>
-    <svg
-      class="w-full h-full"
-      width="502"
-      height="494"
-      viewBox="0 0 502 494"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <g filter="url(#filter0_b)">
-        <circle cx="328" cy="304" r="174" fill="#2E525F" />
-        <circle cx="120.5" cy="405.5" r="90" fill="#2E525F" />
-        <circle cx="120.5" cy="337.5" r="76.5" fill="#2E525F" />
-        <circle cx="88.5" cy="234.5" r="90" fill="#2E525F" />
-        <circle cx="175.52" cy="180.5" r="76.5" fill="#2E525F" />
-        <circle cx="210.5" cy="92.5" r="90" fill="#2E525F" />
-        <circle cx="304.52" cy="119.5" r="76.5" fill="#2E525F" />
-        <circle cx="398.5" cy="88.5" r="90" fill="#2E525F" />
-      </g>
-      <defs>
-        <filter
-          id="filter0_b"
-          x="-49"
-          y="-49"
-          width="600"
-          height="592"
-          filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB"
-        >
-          <feGaussianBlur in="SourceGraphic" stdDeviation="24.5" result="blur" />
-          <feColorMatrix
-            id="colorMatrixElement"
-            in="blur"
-            mode="matrix"
-            values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 25 -15"
-            result="matrix"
-          />
-        </filter>
-      </defs>
-    </svg>
-  </nav>
+  <PawNav v-show="navVisible">
+    <template #main>
+      <button
+        v-tooltip.top="workflowStage === 'running' ? '暂停' : '开始'"
+        class="w-full h-full"
+        @click="handelCameraClick"
+      >
+        <i class="pi text-5xl" :class="workflowStage === 'running' ? 'pi-pause' : 'pi-camera'" />
+      </button>
+    </template>
+
+    <template #1>
+      <button v-tooltip.top="'模型'" class="w-full h-full" @click="changeSideBar('selectModel')">
+        <i class="pi pi-prime text-xl" />
+      </button>
+    </template>
+
+    <template #2>
+      <button
+        v-tooltip.top="'背景'"
+        class="w-full h-full"
+        @click="changeSideBar('customBackground')"
+      >
+        <i class="pi pi-images text-xl" />
+      </button>
+    </template>
+
+    <template #3>
+      <button v-tooltip.top="'Backgrounds'" class="w-full h-full">
+        <i class="pi pi-palette text-xl" />
+      </button>
+    </template>
+
+    <template #4>
+      <button v-tooltip.top="'媒体流转发'" class="w-full h-full" @click="avatar.forwardStream">
+        <i class="pi pi-send text-xl" />
+      </button>
+    </template>
+  </PawNav>
 
   <PrSpeedDial
     :model="menuItems"

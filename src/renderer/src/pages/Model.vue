@@ -1,23 +1,3 @@
-<template>
-  <div class="flex flex-row w-full h-full">
-    <div ref="container" class="flex-1 overflow-hidden min-w-[500px]"></div>
-    <div class="w-[350px] flex flex-col px-2 pb-2 h-full overflow-auto">
-      <PrAccordion :multiple="true">
-        <PrAccordionTab v-for="bone in bones" :key="bone.uuid" :header="bone.name">
-          <div class="flex justify-between">
-            <Knob
-              v-for="key in ['x', 'y', 'z']"
-              :key="key"
-              v-model="bone.rotation[key]"
-              :label="key"
-            />
-          </div>
-        </PrAccordionTab>
-      </PrAccordion>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { ModelPreview } from '@renderer/common/three/ModelPreview'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
@@ -59,3 +39,23 @@ const bones = computed(() => {
   return bones
 })
 </script>
+
+<template>
+  <div class="flex flex-row w-full h-full">
+    <div ref="container" class="flex-1 overflow-hidden min-w-[500px]"></div>
+    <div class="w-[350px] flex flex-col px-2 pb-2 h-full overflow-auto">
+      <PrAccordion :multiple="true">
+        <PrAccordionTab v-for="bone in bones" :key="bone.uuid" :header="bone.name">
+          <div class="flex justify-between">
+            <Knob
+              v-for="key in ['x', 'y', 'z']"
+              :key="key"
+              v-model="bone.rotation[key]"
+              :label="key"
+            />
+          </div>
+        </PrAccordionTab>
+      </PrAccordion>
+    </div>
+  </div>
+</template>
