@@ -16,7 +16,7 @@ function createWindow(config?: Electron.BrowserWindowConstructorOptions, path = 
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     window.loadURL(`${process.env['ELECTRON_RENDERER_URL']}/#${path}`)
   } else {
-    window.loadFile(`${join(__dirname, '../renderer/index.html')}/#${path}`)
+    window.loadFile(`${join(__dirname, '../renderer/index.html')}/${path}`)
   }
 
   return window
@@ -31,7 +31,8 @@ function createMainWindow() {
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      sandbox: false
+      sandbox: false,
+      webSecurity: false
     }
   })
 
