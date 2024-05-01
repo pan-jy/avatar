@@ -37,7 +37,7 @@ export class Base {
     this.#container = container
     // 创建相机
     this.#camera = new PerspectiveCamera(30, window.innerWidth / window.innerHeight, 0.1, Base.FAR)
-    this.#camera.position.set(0, 1, 5)
+    this.#camera.position.set(0, 1.2, 1.2)
 
     // 创建场景
     this.scene = new Scene()
@@ -102,11 +102,11 @@ export class Base {
   }
 
   #createLights() {
-    const dirLight = new DirectionalLight(0xffffff, 3)
+    const dirLight = new DirectionalLight(0xffffff, 2)
     dirLight.position.set(5, 5, 5)
     dirLight.castShadow = true
 
-    const hemiLight = new HemisphereLight(0xffffff, 0x8d8d8d, 3)
+    const hemiLight = new HemisphereLight(0xffffff, 0x8d8d8d, 2)
     hemiLight.position.set(0, 20, 0) // 上方
 
     this.scene.add(dirLight, hemiLight)

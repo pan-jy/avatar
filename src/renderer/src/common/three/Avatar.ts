@@ -32,9 +32,9 @@ export class Avatar extends Base {
     this.#setDrivingModel = setDrivingModel
 
     // 设置控制器
-    this.controls.maxDistance = 10
+    this.controls.maxDistance = 3
     this.controls.minDistance = 0.5
-    this.controls.target.set(0, 1, 0)
+    this.controls.target.set(0, 1.2, 0)
   }
 
   async initBackground() {
