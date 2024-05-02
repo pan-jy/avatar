@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PresetModelList } from '@renderer/common/modelConfig'
+import { PresetModelList } from '@renderer/components/sideBar/selectModel/modelConfig'
 import type { Avatar } from '@renderer/common/three/Avatar'
 import { onMounted, ref } from 'vue'
 

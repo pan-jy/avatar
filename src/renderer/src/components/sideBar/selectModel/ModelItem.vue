@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ModelInfo } from '@renderer/common/modelConfig'
+import type { ModelInfo } from '@renderer/components/sideBar/selectModel/modelConfig'
 
 defineProps<{
   model: ModelInfo

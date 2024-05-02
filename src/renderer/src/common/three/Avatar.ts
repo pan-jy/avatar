@@ -3,9 +3,9 @@ import { Base, ModelFileType } from './Base'
 import { VRMLoaderPlugin, VRMUtils, VRM } from '@pixiv/three-vrm'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import io from 'socket.io-client'
-import { ModelInfo, PresetModelList } from '../modelConfig'
+import { ModelInfo, PresetModelList } from '../../components/sideBar/selectModel/modelConfig'
 import { SetDrivingModelFn } from '../mocap/DriveModel'
-import { backgroungImages } from '@renderer/components/sideBar/customBackground/config'
+import { backgroundImages } from '@renderer/components/sideBar/customBackground/backgroundConfig'
 
 export enum BackgroundType {
   '2d',
@@ -18,7 +18,7 @@ export type BackgroundConfig = { type: BackgroundType; value?: string }
 export class Avatar extends Base {
   backgroundConfig: BackgroundConfig = {
     type: BackgroundType['2d'],
-    value: backgroungImages[0][0].src
+    value: backgroundImages[0][0].src
   }
   modelInfo: ModelInfo = PresetModelList[0]
   #setDrivingModel: SetDrivingModelFn

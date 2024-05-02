@@ -1,7 +1,7 @@
 import * as Kalidokit from 'kalidokit'
 import { Euler, Group, Object3D, Object3DEventMap, Quaternion, Vector3 } from 'three'
 import { VRMHumanBoneName, VRMExpressionPresetName, VRM } from '@pixiv/three-vrm'
-import { FBXAxis } from '@renderer/common/modelConfig'
+import { FBXAxis } from '@renderer/components/sideBar/selectModel/modelConfig'
 
 const getAngle = (axis, idx, rotation) => {
   return axis[idx].length > 1 ? -rotation[axis[idx][1]] : rotation[axis[idx][0]]

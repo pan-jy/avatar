@@ -14,7 +14,7 @@ for (const key in resourcesPath) {
   delete resourcesPath[key]
 }
 
-export const backgroungImages: BackgroundImage[][] = [
+export const backgroundImages: BackgroundImage[][] = [
   [
     {
       name: 'morning',
