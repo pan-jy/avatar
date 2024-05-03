@@ -6,6 +6,7 @@ import { PrimeVueResolver } from 'unplugin-vue-components/resolvers'
 import { createSvgIconsPlugin } from 'vite-plugin-svg-icons'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
 import { normalizePath } from 'vite'
+import { mediapipe } from 'vite-plugin-mediapipe'
 
 export default defineConfig({
   main: {
@@ -25,9 +26,11 @@ export default defineConfig({
     plugins: [externalizeDepsPlugin()]
   },
   renderer: {
+    assetsInclude: ['**/*.vrm', '**/*.fbx', '**/*.glb'],
     resolve: {
       alias: {
-        '@renderer': resolve('src/renderer/src')
+        '@renderer': resolve('src/renderer/src'),
+        '@resources': resolve(__dirname, 'resources')
       }
     },
     plugins: [
@@ -43,7 +46,8 @@ export default defineConfig({
       createSvgIconsPlugin({
         iconDirs: [resolve(process.cwd(), 'src/renderer/src/assets/svgs')],
         symbolId: 'icon-[dir]-[name]'
-      })
+      }),
+      mediapipe()
     ],
     publicDir: resolve(__dirname, 'resources')
   }

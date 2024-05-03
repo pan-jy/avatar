@@ -4,19 +4,29 @@ export interface BackgroundImage {
   src?: string
 }
 
+const resourcesPath = import.meta.glob('@resources/background/**/*.jpg', {
+  eager: true,
+  import: 'default'
+}) as Record<string, string>
+for (const key in resourcesPath) {
+  const newKey = key.split('resources')[1]
+  resourcesPath[newKey] = resourcesPath[key]
+  delete resourcesPath[key]
+}
+
 export const backgroungImages: BackgroundImage[][] = [
   [
     {
       name: 'morning',
-      src: '/background/2d/morning_bg.jpg'
+      src: resourcesPath['/background/2d/morning_bg.jpg']
     },
     {
       name: 'midday',
-      src: '/background/2d/midday_bg.jpg'
+      src: resourcesPath['/background/2d/midday_bg.jpg']
     },
     {
       name: 'night',
-      src: '/background/2d/night_bg.jpg'
+      src: resourcesPath['/background/2d/night_bg.jpg']
     },
     {
       name: 'transparent'
@@ -25,28 +35,28 @@ export const backgroungImages: BackgroundImage[][] = [
   [
     {
       name: 'starrynight',
-      cover: '/background/3d/starrynight_icon.jpg',
-      src: '/background/3d/starrynight.jpg'
+      cover: resourcesPath['/background/3d/starrynight_icon.jpg'],
+      src: resourcesPath['/background/3d/starrynight.jpg']
     },
     {
       name: 'loft',
-      cover: '/background/3d/loft_icon.jpg',
-      src: '/background/3d/loft.jpg'
+      cover: resourcesPath['/background/3d/loft_icon.jpg'],
+      src: resourcesPath['/background/3d/loft.jpg']
     },
     {
       name: 'monumentvalley',
-      cover: '/background/3d/monumentvalley_icon.jpg',
-      src: '/background/3d/monumentvalley.jpg'
+      cover: resourcesPath['/background/3d/monumentvalley_icon.jpg'],
+      src: resourcesPath['/background/3d/monumentvalley.jpg']
     },
     {
       name: 'mars',
-      cover: '/background/3d/mars_icon.jpg',
-      src: '/background/3d/mars.jpg'
+      cover: resourcesPath['/background/3d/mars_icon.jpg'],
+      src: resourcesPath['/background/3d/mars.jpg']
     },
     {
       name: 'factory',
-      cover: '/background/3d/factory_icon.jpg',
-      src: '/background/3d/factory.jpg'
+      cover: resourcesPath['/background/3d/factory_icon.jpg'],
+      src: resourcesPath['/background/3d/factory.jpg']
     }
   ]
 ]
