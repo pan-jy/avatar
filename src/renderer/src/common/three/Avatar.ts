@@ -5,6 +5,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import io from 'socket.io-client'
 import { ModelInfo, PresetModelList } from '../modelConfig'
 import { SetDrivingModelFn } from '../mocap/DriveModel'
+import { backgroungImages } from '@renderer/components/sideBar/customBackground/config'
 
 export enum BackgroundType {
   '2d',
@@ -17,7 +18,7 @@ export type BackgroundConfig = { type: BackgroundType; value?: string }
 export class Avatar extends Base {
   backgroundConfig: BackgroundConfig = {
     type: BackgroundType['2d'],
-    value: '/background/morning_bg.jpg'
+    value: backgroungImages[0][0].src
   }
   modelInfo: ModelInfo = PresetModelList[0]
   #setDrivingModel: SetDrivingModelFn

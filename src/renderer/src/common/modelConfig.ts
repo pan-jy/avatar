@@ -6,58 +6,68 @@ export interface ModelInfo {
   cover?: string
 }
 
+const resourcesPath = import.meta.glob('@resources/models/**/*.{vrm,fbx,png}', {
+  eager: true,
+  import: 'default'
+}) as Record<string, string>
+for (const key in resourcesPath) {
+  const newKey = key.split('resources')[1]
+  resourcesPath[newKey] = resourcesPath[key]
+  delete resourcesPath[key]
+}
+
 export const PresetModelList = [
   {
     name: 'Yukino',
-    path: '/models/vrm/Uniform.vrm'
+    path: resourcesPath['/models/vrm/Uniform.vrm']
   },
   {
     name: 'VAL',
-    path: '/models/vrm/VAL.vrm',
-    cover: '/models/covers/VAL.png'
+    path: resourcesPath['/models/vrm/VAL.vrm'],
+    cover: resourcesPath['/models/covers/VAL.png']
   },
   {
     name: 'Ashtra',
-    path: '/models/vrm/Ashtra.vrm',
-    cover: '/models/covers/Ashtra.png'
+    path: resourcesPath['/models/vrm/Ashtra.vrm'],
+    cover: resourcesPath['/models/covers/Ashtra.png']
   },
   {
     name: 'Hanako',
-    path: '/models/vrm/Hanako.vrm',
-    cover: '/models/covers/Hanako.png'
+    path: resourcesPath['/models/vrm/Hanako.vrm'],
+    cover: resourcesPath['/models/covers/Hanako.png']
   },
   {
     name: 'Sendagaya',
-    path: '/models/vrm/Sendagaya.vrm',
-    cover: '/models/covers/Sendagaya.png'
+    path: resourcesPath['/models/vrm/Sendagaya.vrm'],
+    cover: resourcesPath['/models/covers/Sendagaya.png']
   },
   {
     name: 'Amaris',
-    path: '/models/vrm/Amaris.vrm',
-    cover: '/models/covers/Amaris.png'
+    path: resourcesPath['/models/vrm/Amaris.vrm'],
+    cover: resourcesPath['/models/covers/Amaris.png']
   },
   {
     name: 'Natsuki',
-    path: '/models/vrm/Natsuki.vrm',
-    cover: '/models/covers/Natsuki.png'
+    path: resourcesPath['/models/vrm/Natsuki.vrm'],
+    cover: resourcesPath['/models/covers/Natsuki.png']
   },
   {
     name: 'Puer',
-    path: '/models/vrm/PureGirl.vrm'
+    path: resourcesPath['/models/vrm/PureGirl.vrm']
   },
   {
     name: 'Shirai',
-    path: '/models/vrm/Shirai.vrm'
+    path: resourcesPath['/models/vrm/Shirai.vrm']
   },
   {
     name: 'Vanguard',
-    path: '/models/fbx/Vanguard.fbx',
-    cover: '/models/covers/Vanguard.png'
+    path: resourcesPath['/models/fbx/Vanguard.fbx'],
+    cover: resourcesPath['/models/covers/Vanguard.png']
   },
   {
     name: 'Mousey',
-    path: '/models/fbx/Mousey.fbx',
-    cover: '/models/covers/Mousey.png'
+    path: resourcesPath['/models/fbx/Mousey.fbx'],
+    cover: resourcesPath['/models/covers/Mousey.png']
   }
 ]
 
