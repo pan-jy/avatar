@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { backgroundImages, tabs } from './backgroundConfig'
+import { ref, onMounted, inject } from 'vue'
+import { tabs } from '../../../common/config/backgroundConfig'
 import type { Avatar } from '@renderer/common/three/Avatar'
+import { configKey } from '@renderer/common/config/Config'
 
 const props = defineProps<{
   avatar: Avatar
 }>()
 
 const curTab = ref(0)
-const curBg = ref(backgroundImages[0][0].src)
+const curBg = ref()
+const { backgroundImages } = inject(configKey)!
 
 const color = ref()
 function get0xRgb(r: number, g: number, b: number) {
@@ -19,7 +21,7 @@ function get0xRgb(r: number, g: number, b: number) {
 }
 
 onMounted(async () => {
-  const { type, value } = props.avatar.backgroundConfig
+  const { type, value } = props.avatar.backgroundConfig!
   curTab.value = type
   if (type === 2) {
     curBg.value = value // 16进制颜色

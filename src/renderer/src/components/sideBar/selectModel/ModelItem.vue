@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ModelInfo } from './modelConfig'
+import type { ModelInfo } from '@renderer/common/config/modelConfig'
 
 defineProps<{
   model: ModelInfo

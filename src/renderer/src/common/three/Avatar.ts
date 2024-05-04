@@ -3,9 +3,8 @@ import { Base, ModelFileType } from './Base'
 import { VRMLoaderPlugin, VRMUtils, VRM } from '@pixiv/three-vrm'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import io from 'socket.io-client'
-import { ModelInfo, PresetModelList } from '../../components/sideBar/selectModel/modelConfig'
+import type { ModelInfo } from '../config/modelConfig'
 import { SetDrivingModelFn } from '../mocap/DriveModel'
-import { backgroundImages } from '@renderer/components/sideBar/customBackground/backgroundConfig'
 
 export enum BackgroundType {
   '2d',
@@ -16,11 +15,8 @@ export enum BackgroundType {
 export type BackgroundConfig = { type: BackgroundType; value?: string }
 
 export class Avatar extends Base {
-  backgroundConfig: BackgroundConfig = {
-    type: BackgroundType['2d'],
-    value: backgroundImages[0][0].src
-  }
-  modelInfo: ModelInfo = PresetModelList[0]
+  backgroundConfig: BackgroundConfig | null = null
+  modelInfo: ModelInfo | null = null
   #setDrivingModel: SetDrivingModelFn
 
   constructor(container: HTMLElement, setDrivingModel: SetDrivingModelFn) {
@@ -37,8 +33,8 @@ export class Avatar extends Base {
   }
 
   async initBackground() {
-    const config = await window.electron.ipcRenderer.invoke('get-store', 'background')
-    if (config) this.backgroundConfig = config
+    const background = await window.electron.ipcRenderer.invoke('get-store', 'background')
+    this.backgroundConfig = background as BackgroundConfig
     this.setBackground(this.backgroundConfig)
   }
 
@@ -72,7 +68,7 @@ export class Avatar extends Base {
 
   async initModel() {
     const modelInfo = await window.electron.ipcRenderer.invoke('get-store', 'modelInfo')
-    if (modelInfo) this.modelInfo = modelInfo
+    this.modelInfo = modelInfo as ModelInfo
     this.handleModelChange(this.modelInfo)
   }
 

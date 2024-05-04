@@ -1,27 +1,28 @@
 <script setup lang="ts">
-import { PresetModelList } from '@renderer/components/sideBar/selectModel/modelConfig'
+import { configKey } from '@renderer/common/config/Config'
 import type { Avatar } from '@renderer/common/three/Avatar'
-import { onMounted, ref } from 'vue'
+import { inject, onMounted, ref } from 'vue'
 
 const props = defineProps<{
   avatar: Avatar
 }>()
 
-const curModel = ref(PresetModelList[0])
+const curModel = ref()
+const { modelList } = inject(configKey)!
 
 onMounted(async () => {
-  const { path } = props.avatar.modelInfo
-  curModel.value = PresetModelList.find((model) => model.path === path) || PresetModelList[0]
+  const { path } = props.avatar.modelInfo!
+  curModel.value = modelList.find((model) => model.path === path) || modelList[0]
 })
 </script>
 
 <template>
   <div class="flex flex-col gap-4">
     <ModelItem
-      v-for="model in PresetModelList"
-      :key="model.path"
+      v-for="model in modelList"
+      :key="model?.path"
       :model="model"
-      :active="curModel.path === model.path"
+      :active="curModel?.path === model?.path"
       @click="
         () => {
           curModel = model
