@@ -22,7 +22,7 @@ export type ModelFileType = 'glb' | 'vrm' | 'fbx'
 export class Base {
   scene: Scene
   controls: OrbitControls
-  #camera: PerspectiveCamera
+  camera: PerspectiveCamera
   #container: HTMLElement
   renderer: WebGLRenderer
   animateCallbacks: Array<() => void> = []
@@ -36,8 +36,8 @@ export class Base {
 
     this.#container = container
     // 创建相机
-    this.#camera = new PerspectiveCamera(30, window.innerWidth / window.innerHeight, 0.1, Base.FAR)
-    this.#camera.position.set(0, 1.2, 1.2)
+    this.camera = new PerspectiveCamera(30, window.innerWidth / window.innerHeight, 0.1, Base.FAR)
+    this.camera.position.set(0, 1, 5)
 
     // 创建场景
     this.scene = new Scene()
@@ -53,7 +53,7 @@ export class Base {
     this.watchSize()
 
     // 创建控制器
-    this.controls = new OrbitControls(this.#camera, this.renderer.domElement)
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement)
 
     // 将渲染器的 canvas 添加到容器中
     container.append(this.renderer.domElement)
@@ -67,9 +67,9 @@ export class Base {
       useThrottleFn(
         ([width, height]) => {
           // 更新相机的宽高比
-          this.#camera.aspect = width / height
+          this.camera.aspect = width / height
           // 更新相机的投影矩阵
-          this.#camera.updateProjectionMatrix()
+          this.camera.updateProjectionMatrix()
           // 更新渲染器的大小
           this.renderer.setSize(width, height)
           // 更新渲染器的像素比
@@ -85,7 +85,7 @@ export class Base {
   start() {
     this.renderer.setAnimationLoop(() => {
       this.controls.update()
-      this.renderer.render(this.scene, this.#camera)
+      this.renderer.render(this.scene, this.camera)
       this.animateCallbacks.forEach((callback) => callback())
     })
   }

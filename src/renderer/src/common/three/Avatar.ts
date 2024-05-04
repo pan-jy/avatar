@@ -34,7 +34,6 @@ export class Avatar extends Base {
     // 设置控制器
     this.controls.maxDistance = 3
     this.controls.minDistance = 0.5
-    this.controls.target.set(0, 1.2, 0)
   }
 
   async initBackground() {
@@ -81,6 +80,18 @@ export class Avatar extends Base {
     window.electron.ipcRenderer.invoke('set-store', 'modelInfo', modelInfo)
     this.modelInfo = modelInfo
     const drivingModel = await this.loadModel(modelInfo.path)
+    // 设置相机位置
+    let neck
+    if (drivingModel instanceof VRM) {
+      neck = drivingModel.humanoid.getNormalizedBoneNode('neck')
+      this.camera.position.z = 1
+    } else {
+      neck = this.bonesMap.get('neck')
+      this.camera.position.z = 2
+    }
+    const { y = 1.4 } = neck!.localToWorld(neck!.position.clone())
+    this.camera.position.y = y
+    this.controls.target.y = y
     this.#setDrivingModel(drivingModel)
   }
 
