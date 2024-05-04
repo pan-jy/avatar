@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ModelInfo } from '@renderer/components/sideBar/selectModel/modelConfig'
+import type { ModelInfo } from './modelConfig'
 
 defineProps<{
   model: ModelInfo
@@ -14,7 +14,7 @@ function handelClick(path: string) {
 <template>
   <div
     v-tooltip.bottom="model.name"
-    class="model-card relative w-[100px] h-[100px] rounded-full overflow-hidden flex justify-center items-center border-4 border-white outline bg-white/90"
+    class="model-card relative w-[150px] h-[150px] rounded-full overflow-hidden flex justify-center items-center border-4 border-white outline bg-white/90"
     :class="
       active ? 'outline-[7px] outline-primary-300' : 'hover:outline-[5px] hover:outline-white/40'
     "
@@ -26,8 +26,9 @@ function handelClick(path: string) {
       class="w-full h-full"
       image-class="h-full object-cover"
     />
+    <PrAvatar v-else :label="model.name[0]" shape="circle" class="w-full h-full text-9xl" />
     <div
-      class="absolute items-center justify-center flex-wrap text-xs text-center bg-black/50 text-white bottom-0 w-full h-2/5 cursor-pointer hidden"
+      class="absolute items-center justify-center flex-wrap text-xs text-center bg-black/50 text-white bottom-0 w-full h-1/4 cursor-pointer hidden"
       @click.stop="handelClick(model.path)"
     >
       查看详情
