@@ -1,12 +1,12 @@
-import { PresetModelList, presetModelList } from '@renderer/common/config/modelConfig'
+import { ModelInfo, PresetModelList, presetModelList } from '@renderer/common/config/modelConfig'
 import { BackgroundImage, backgroundImages } from '@renderer/common/config/backgroundConfig'
-import { InjectionKey } from 'vue'
+import { InjectionKey, ref, toRaw } from 'vue'
 import { BackgroundType } from '../three/Avatar'
 
 export const configKey = Symbol() as InjectionKey<Config>
 
 export class Config {
-  modelList: PresetModelList = []
+  modelList = ref<PresetModelList>([])
   backgroundImages: BackgroundImage[][] = []
 
   constructor() {
@@ -16,12 +16,24 @@ export class Config {
 
   async initModelList() {
     const modelList = await window.electron.ipcRenderer.invoke('get-store', 'modelList')
-    if (modelList) this.modelList = modelList
+    if (modelList) this.modelList.value = modelList
     else {
       window.electron.ipcRenderer.invoke('set-store', 'modelList', presetModelList)
       window.electron.ipcRenderer.invoke('set-store', 'modelInfo', presetModelList[0])
-      this.modelList = presetModelList
+      this.modelList.value = presetModelList
     }
+  }
+
+  async uploadModel(model: ModelInfo) {
+    this.modelList.value.unshift(model)
+    await window.electron.ipcRenderer.invoke('set-store', 'modelList', toRaw(this.modelList.value))
+  }
+
+  async deleteModel(model: ModelInfo) {
+    this.modelList.value = toRaw(this.modelList.value).filter(
+      (item) => item.path !== model.path && item.name !== model.name
+    )
+    await window.electron.ipcRenderer.invoke('set-store', 'modelList', toRaw(this.modelList.value))
   }
 
   async initBackground() {

@@ -3,6 +3,7 @@ import type { TPose } from 'kalidokit'
 export interface ModelInfo {
   path: string
   name: string
+  userUpload?: boolean
   cover?: string
 }
 
