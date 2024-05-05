@@ -10,16 +10,11 @@ defineEmits<{
   select: [ModelInfo]
   delete: [ModelInfo]
 }>()
-
-function handelPreview(path: string) {
-  if (path) window.electron.ipcRenderer.invoke('open-new-win', `/model?path=${path}`)
-}
 </script>
 
 <template>
-  <div class="relative item rounded-full">
+  <div class="relative model-item rounded-full cursor-pointer">
     <div
-      v-tooltip.bottom="model.name"
       class="model-card relative w-[150px] h-[150px] rounded-full overflow-hidden flex justify-center items-center border-4 border-white outline bg-white/90"
       :class="
         active ? 'outline-[7px] outline-primary-300' : 'hover:outline-[5px] hover:outline-white/40'
@@ -33,14 +28,27 @@ function handelPreview(path: string) {
         class="w-full h-full"
         image-class="h-full object-cover"
       />
-      <PrAvatar v-else :label="model.name[0]" shape="circle" class="w-full h-full text-9xl" />
+      <PrAvatar
+        v-else
+        :label="model.name[0].toUpperCase()"
+        shape="circle"
+        class="w-full h-full text-9xl"
+      />
       <div
-        class="absolute items-center justify-center flex-wrap text-xs text-center bg-black/50 text-white bottom-0 w-full h-1/4 cursor-pointer hidden"
-        @click.stop="handelPreview(model.path)"
+        class="absolute items-center justify-center text-xs text-center bg-black/50 text-white bottom-0 w-full h-1/4 hidden"
       >
-        查看详情
+        <!-- <PrInplace :closable="true">
+          <template #display>
+            {{ model.name }}
+          </template>
+          <template #content>
+            <PrInputText autofocus />
+          </template>
+        </PrInplace> -->
+        {{ model.name }}
       </div>
     </div>
+
     <div
       v-if="model.userUpload"
       class="absolute w-[40px] h-[40px] top-1 right-1 z-10 bg-gray-300 rounded-full items-center justify-center overflow-hidden cursor-pointer outline-white/40 hover:outline hover:outline-4 hidden"
@@ -52,7 +60,7 @@ function handelPreview(path: string) {
 </template>
 
 <style scoped>
-.item:hover .absolute {
+.model-item:hover .absolute {
   display: flex;
 }
 </style>

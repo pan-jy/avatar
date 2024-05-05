@@ -2,7 +2,7 @@
 import { configKey } from '@renderer/common/config/Config'
 import { ModelInfo } from '@renderer/common/config/modelConfig'
 import type { Avatar } from '@renderer/common/three/Avatar'
-import { inject, onMounted, ref, toRaw } from 'vue'
+import { inject, onMounted, ref, toRaw, reactive } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
 
@@ -22,7 +22,7 @@ async function handelUploadModel(e) {
   if (!file) return
   try {
     await config!.uploadModel({
-      name: file.name.replace(/\.\w+$/, ''),
+      name: file.name.replace(/\.\w+$/, '').slice(0, 10),
       userUpload: true,
       path: file.path
     })
@@ -32,14 +32,14 @@ async function handelUploadModel(e) {
       detail: '模型已上传, 右键点击模型进行更多操作',
       life: 3000
     })
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    toast.add({
-      severity: 'error',
-      summary: '上传失败',
-      detail: error.message,
-      life: 3000
-    })
+  } catch (error: unknown) {
+    if (error instanceof Error)
+      toast.add({
+        severity: 'error',
+        summary: '上传失败',
+        detail: error.message,
+        life: 3000
+      })
   }
 }
 function handelSelect(model: ModelInfo) {
@@ -67,12 +67,49 @@ function handelDelete(model: ModelInfo) {
     }
   })
 }
-// function handelRename(model: ModelInfo) {
-//   config!.modifyModel(model)
-// }
-// function handelChangeCover(model: ModelInfo) {
-//   config!.modifyModel(model)
-// }
+
+type DialogConfig = {
+  visible: boolean
+  type: 'name' | 'cover'
+  value: string
+}
+const dialogConfig = reactive<DialogConfig>({
+  visible: false,
+  type: 'name',
+  value: ''
+})
+
+async function handelModifySave() {
+  const { type, value } = dialogConfig
+  try {
+    let message = ''
+    if (type === 'name') {
+      if (!value) throw new Error('模型名称不能为空')
+      if (value === menuIn.value?.name) throw new Error('新名称与旧名称相同')
+      await config!.modifyModel({ ...curModel.value, name: value })
+      message = '模型重命名成功'
+    } else if (type === 'cover') {
+      await config!.modifyModel({ ...curModel.value, cover: value })
+      message = '模型封面修改成功'
+    }
+    dialogConfig.visible = false
+    toast.add({
+      severity: 'success',
+      summary: '修改成功',
+      detail: message,
+      life: 3000
+    })
+    menuIn.value = undefined
+  } catch (error: unknown) {
+    if (error instanceof Error)
+      toast.add({
+        severity: 'error',
+        summary: '修改失败',
+        detail: error.message,
+        life: 3000
+      })
+  }
+}
 
 onMounted(async () => {
   const { path } = props.avatar.modelInfo!
@@ -82,14 +119,31 @@ onMounted(async () => {
 const menu = ref()
 const menuIn = ref<ModelInfo>()
 const defaultItems = [
-  { label: '重命名', icon: 'pi pi-file-edit' },
-  { label: '修改封面', icon: 'pi pi-image' },
+  {
+    label: '重命名',
+    icon: 'pi pi-file-edit',
+    command: () => {
+      dialogConfig.visible = true
+      dialogConfig.type = 'name'
+      dialogConfig.value = menuIn.value!.name
+    }
+  },
+  {
+    label: '修改封面',
+    icon: 'pi pi-image',
+    command: () => {
+      dialogConfig.visible = true
+      dialogConfig.type = 'cover'
+      dialogConfig.value = menuIn.value!.cover ?? ''
+    }
+  },
   {
     label: '新窗口查看',
     icon: 'pi pi-external-link',
     command: () => {
       const path = menuIn.value!.path
       if (path) window.electron.ipcRenderer.invoke('open-new-win', `/model?path=${path}`)
+      menuIn.value = undefined
     }
   }
 ]
@@ -98,6 +152,7 @@ const deleteItem = {
   icon: 'pi pi-trash',
   command: () => {
     handelDelete(menuIn.value!)
+    menuIn.value = undefined
   }
 }
 const items = ref(defaultItems)
@@ -125,6 +180,49 @@ function handelRightClick(e: MouseEvent, model: ModelInfo) {
       @delete="handelDelete"
       @contextmenu="handelRightClick($event, model)"
     />
-    <PrContextMenu ref="menu" :model="items" @hide="menuIn = undefined" />
+
+    <PrDialog v-model:visible="dialogConfig.visible" modal header="重命名" style="width: 25rem">
+      <section class="flex flex-col w-full gap-2">
+        <div v-if="dialogConfig.type === 'name'" class="flex items-center gap-3 mb-3">
+          <label for="modelName" class="font-semibold w-6rem">模型名称</label>
+          <PrInputText
+            id="modelName"
+            v-model="dialogConfig.value"
+            autofocus
+            class="flex-auto"
+            placeholder="请输入模型名称"
+            @change="
+              (e) => {
+                const value = e.target.value.trim().slice(0, 10)
+                e.target.value = value
+                dialogConfig.value = value
+              }
+            "
+          />
+          <span
+            class="absolute right-8 top-1/2 -translate-y-1/2"
+            :class="dialogConfig.value.length > 10 ? 'text-red-500' : 'text-gray-500'"
+          >
+            {{ dialogConfig.value.length }}/10
+          </span>
+        </div>
+        <div class="flex justify-end gap-2">
+          <PrButton
+            type="button"
+            label="取消"
+            severity="secondary"
+            @click="
+              () => {
+                dialogConfig.visible = false
+                menuIn = undefined
+              }
+            "
+          />
+          <PrButton type="button" label="保存" @click="handelModifySave" />
+        </div>
+      </section>
+    </PrDialog>
+
+    <PrContextMenu ref="menu" :model="items" />
   </div>
 </template>
