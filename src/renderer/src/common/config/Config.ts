@@ -25,14 +25,24 @@ export class Config {
   }
 
   async uploadModel(model: ModelInfo) {
+    if (this.modelList.value.some((item) => item.path === model.path))
+      throw new Error('该模型已存在')
     this.modelList.value.unshift(model)
     await window.electron.ipcRenderer.invoke('set-store', 'modelList', toRaw(this.modelList.value))
   }
 
   async deleteModel(model: ModelInfo) {
     this.modelList.value = toRaw(this.modelList.value).filter(
-      (item) => item.path !== model.path && item.name !== model.name
+      (item) => !item.userUpload && item.path !== model.path && item.name !== model.name
     )
+    await window.electron.ipcRenderer.invoke('set-store', 'modelList', toRaw(this.modelList.value))
+  }
+
+  async modifyModel(model: ModelInfo) {
+    this.modelList.value = toRaw(this.modelList.value).map((item) => {
+      if (item.path === model.path) return model
+      return item
+    })
     await window.electron.ipcRenderer.invoke('set-store', 'modelList', toRaw(this.modelList.value))
   }
 

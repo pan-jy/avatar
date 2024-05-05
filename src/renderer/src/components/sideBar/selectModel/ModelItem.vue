@@ -17,7 +17,7 @@ function handelPreview(path: string) {
 </script>
 
 <template>
-  <div class="relative item">
+  <div class="relative item rounded-full">
     <div
       v-tooltip.bottom="model.name"
       class="model-card relative w-[150px] h-[150px] rounded-full overflow-hidden flex justify-center items-center border-4 border-white outline bg-white/90"

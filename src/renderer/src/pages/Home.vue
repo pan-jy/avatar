@@ -7,6 +7,8 @@ import { HolisticMoCap } from '@renderer/common/mocap/HolisticMoCap'
 import { DriveModel } from '@renderer/common/mocap/DriveModel'
 import SelectModel from '@renderer/components/sideBar/selectModel/SelectModel.vue'
 import CustomBackground from '@renderer/components/sideBar/customBackground/CustomBackground.vue'
+import Toast from 'primevue/toast'
+import ConfirmDialog from 'primevue/confirmdialog'
 
 // DOM 元素
 const avatarContainer = ref<HTMLCanvasElement | null>(null)
@@ -189,4 +191,7 @@ onUnmounted(() => {
       <span class="text-white mt-4 text-lg animate-pulse">模型加载中...</span>
     </div>
   </Teleport>
+
+  <Toast />
+  <ConfirmDialog pt:icon:class="text-4xl" style="width: 300px" />
 </template>
