@@ -15,7 +15,7 @@ export default {
       'dark:text-white/80',
 
       // Spacing
-      'p-5',
+      'p-2',
       'gap-2',
 
       // Borders
@@ -88,7 +88,7 @@ export default {
       'dark:text-white/80',
 
       // Spacing
-      'p-8',
+      'p-3',
 
       // Borders
       'border',
@@ -120,6 +120,14 @@ export default {
       // Shape
       'rounded'
     ]
+  },
+  details: {
+    class: 'flex-1'
+  },
+  badge: {
+    root: {
+      class: 'hidden'
+    }
   },
   thumbnail: {
     class: 'shrink-0'

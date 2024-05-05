@@ -86,10 +86,11 @@ async function handelModifySave() {
     if (type === 'name') {
       if (!value) throw new Error('模型名称不能为空')
       if (value === menuIn.value?.name) throw new Error('新名称与旧名称相同')
-      await config!.modifyModel({ ...curModel.value, name: value })
+      await config!.modifyModel({ ...menuIn.value!, name: value })
       message = '模型重命名成功'
     } else if (type === 'cover') {
-      await config!.modifyModel({ ...curModel.value, cover: value })
+      if (!value) throw new Error('请选择封面图片')
+      await config!.modifyModel({ ...menuIn.value!, cover: value })
       message = '模型封面修改成功'
     }
     dialogConfig.visible = false
@@ -108,6 +109,8 @@ async function handelModifySave() {
         detail: error.message,
         life: 3000
       })
+  } finally {
+    dialogConfig.value = ''
   }
 }
 
@@ -181,7 +184,12 @@ function handelRightClick(e: MouseEvent, model: ModelInfo) {
       @contextmenu="handelRightClick($event, model)"
     />
 
-    <PrDialog v-model:visible="dialogConfig.visible" modal header="重命名" style="width: 25rem">
+    <PrDialog
+      v-model:visible="dialogConfig.visible"
+      modal
+      :header="dialogConfig.type === 'name' ? '重命名' : '修改封面'"
+      style="width: 25rem"
+    >
       <section class="flex flex-col w-full gap-2">
         <div v-if="dialogConfig.type === 'name'" class="flex items-center gap-3 mb-3">
           <label for="modelName" class="font-semibold w-6rem">模型名称</label>
@@ -205,6 +213,29 @@ function handelRightClick(e: MouseEvent, model: ModelInfo) {
           >
             {{ dialogConfig.value.length }}/10
           </span>
+        </div>
+        <div v-else>
+          <PrFileUpload
+            accept="image/*"
+            custom-upload
+            :file-limit="1"
+            :max-file-size="10000000"
+            choose-label="选择文件"
+            cancel-label="取消"
+            :show-upload-button="false"
+            pt:progressbar:root:class="hidden"
+            @select="
+              (e) => {
+                const file = e.files[0]
+                if (!file) return
+                dialogConfig.value = file.path
+              }
+            "
+          >
+            <template #empty>
+              <p>拖拽或点击按钮进行上传</p>
+            </template>
+          </PrFileUpload>
         </div>
         <div class="flex justify-end gap-2">
           <PrButton
