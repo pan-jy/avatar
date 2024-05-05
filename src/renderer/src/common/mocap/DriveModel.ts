@@ -1,11 +1,7 @@
 import * as Kalidokit from 'kalidokit'
 import { Euler, Group, Object3D, Object3DEventMap, Quaternion, Vector3 } from 'three'
 import { VRMHumanBoneName, VRMExpressionPresetName, VRM } from '@pixiv/three-vrm'
-import { FBXAxis } from '@renderer/common/modelConfig'
-
-const getAngle = (axis, idx, rotation) => {
-  return axis[idx].length > 1 ? -rotation[axis[idx][1]] : rotation[axis[idx][0]]
-}
+import { FBXAxis } from '@renderer/common/config/modelConfig'
 
 export type SetDrivingModelFn = (vrmModel: VRM | Group<Object3DEventMap>) => void
 
@@ -15,6 +11,45 @@ export class DriveModel {
 
   setModel(vrmModel: VRM | Group<Object3DEventMap>) {
     this.currentModel = vrmModel
+    const initialPose = {
+      LeftUpperArm: new Euler(0, 0, 1.25),
+      LeftLowerArm: new Euler(0, 0, 0.1),
+      LeftHand: new Euler(0, 0, 0.1),
+      RightUpperArm: new Euler(0, 0, -1.25),
+      RightLowerArm: new Euler(0, 0, -0.1),
+      RightHand: new Euler(0, 0, -0.1)
+    }
+    this.#transformAxis(initialPose, vrmModel instanceof VRM)
+
+    const start = performance.now()
+    const init = (t) => {
+      for (const key in initialPose) {
+        this.#rigRotation(VRMHumanBoneName[key], initialPose[key])
+      }
+
+      if (t - start < 5000) requestAnimationFrame(init)
+    }
+    requestAnimationFrame(init)
+  }
+
+  #getAngle(axis, idx, rotation) {
+    return axis[idx].length > 1 ? -rotation[axis[idx][1]] : rotation[axis[idx][0]]
+  }
+
+  #transformAxis(riggedPose, isVRM = false) {
+    if (!this.currentModel || isVRM) return
+    // const Axis = (<Group<Object3DEventMap>>this.currentModel).userData.type === 'fbx' ? FBXAxis : undefined
+    for (const key in riggedPose) {
+      let rotation = riggedPose[key]
+      if (key === 'Hips') rotation = riggedPose.Hips.rotation
+      if (!rotation) continue
+      const { x, y, z } = rotation
+      const tempRotation = { x, y, z }
+      const axis = FBXAxis[key]
+      rotation.x = this.#getAngle(axis, 0, tempRotation)
+      rotation.y = this.#getAngle(axis, 1, tempRotation)
+      rotation.z = this.#getAngle(axis, 2, tempRotation)
+    }
   }
 
   /**
@@ -170,46 +205,48 @@ export class DriveModel {
         runtime: 'mediapipe'
       })!
 
-      if (this.currentModel instanceof VRM) {
-        // this.#rigPosition(
-        //   VRMHumanBoneName.Hips,
-        //   {
-        //     x: -riggedPose.Hips.position.x, // Reverse direction
-        //     y: riggedPose.Hips.position.y + 1, // Add a bit of height
-        //     z: -riggedPose.Hips.position.z // Reverse direction
-        //   },
-        //   1,
-        //   0.07
-        // )
-      } else {
-        const Axis = this.currentModel.userData.type === 'fbx' ? FBXAxis : undefined
-        for (const key in Axis) {
-          let rotation = riggedPose[key]
-          if (key === 'Hips') rotation = riggedPose.Hips.rotation
-          if (!rotation) continue
-          const { x, y, z } = rotation
-          const tempRotation = { x, y, z }
-          const axis = FBXAxis[key]
-          rotation.x = getAngle(axis, 0, tempRotation)
-          rotation.y = getAngle(axis, 1, tempRotation)
-          rotation.z = getAngle(axis, 2, tempRotation)
-        }
-      }
+      // if (this.currentModel instanceof VRM) {
+      //   this.rigPosition(
+      //     VRMHumanBoneName.Hips,
+      //     {
+      //       x: -riggedPose.Hips.position.x, // Reverse direction
+      //       y: riggedPose.Hips.position.y + 1, // Add a bit of height
+      //       z: -riggedPose.Hips.position.z // Reverse direction
+      //     },
+      //     1,
+      //     0.07
+      //   )
+      // } else {
+      //   const Axis = this.currentModel.userData.type === 'fbx' ? FBXAxis : undefined
+      //   for (const key in Axis) {
+      //     let rotation = riggedPose[key]
+      //     if (key === 'Hips') rotation = riggedPose.Hips.rotation
+      //     if (!rotation) continue
+      //     const { x, y, z } = rotation
+      //     const tempRotation = { x, y, z }
+      //     const axis = FBXAxis[key]
+      //     rotation.x = this.#getAngle(axis, 0, tempRotation)
+      //     rotation.y = this.#getAngle(axis, 1, tempRotation)
+      //     rotation.z = this.#getAngle(axis, 2, tempRotation)
+      //   }
+      // }
+
+      this.#transformAxis(riggedPose, this.currentModel instanceof VRM)
 
       this.#rigRotation(VRMHumanBoneName.Hips, riggedPose.Hips.rotation, 0.7)
 
-      this.#rigRotation(VRMHumanBoneName.Chest, riggedPose.Spine, 0.25, 0.3)
-      this.#rigRotation(VRMHumanBoneName.Spine, riggedPose.Spine, 0.45, 0.3)
+      this.#rigRotation(VRMHumanBoneName.Chest, riggedPose.Spine, 0.25)
+      this.#rigRotation(VRMHumanBoneName.Spine, riggedPose.Spine, 0.45)
 
-      this.#rigRotation(VRMHumanBoneName.RightUpperArm, riggedPose.RightUpperArm, 1, 0.3)
-      this.#rigRotation(VRMHumanBoneName.RightLowerArm, riggedPose.RightLowerArm, 1, 0.3)
-      this.#rigRotation(VRMHumanBoneName.LeftUpperArm, riggedPose.LeftUpperArm, 1, 0.3)
-      this.#rigRotation(VRMHumanBoneName.LeftLowerArm, riggedPose.LeftLowerArm, 1, 0.3)
+      this.#rigRotation(VRMHumanBoneName.RightUpperArm, riggedPose.RightUpperArm)
+      this.#rigRotation(VRMHumanBoneName.RightLowerArm, riggedPose.RightLowerArm)
+      this.#rigRotation(VRMHumanBoneName.LeftUpperArm, riggedPose.LeftUpperArm)
+      this.#rigRotation(VRMHumanBoneName.LeftLowerArm, riggedPose.LeftLowerArm)
 
-      this.#rigRotation(VRMHumanBoneName.LeftUpperLeg, riggedPose.LeftUpperLeg, 1, 0.3)
-      this.#rigRotation(VRMHumanBoneName.LeftLowerLeg, riggedPose.LeftLowerLeg, 1, 0.3)
-      this.#rigRotation(VRMHumanBoneName.RightUpperLeg, riggedPose.RightUpperLeg, 1, 0.3)
-      this.#rigRotation(VRMHumanBoneName.RightLowerLeg, riggedPose.RightLowerLeg, 1, 0.3)
+      this.#rigRotation(VRMHumanBoneName.LeftUpperLeg, riggedPose.LeftUpperLeg)
+      this.#rigRotation(VRMHumanBoneName.LeftLowerLeg, riggedPose.LeftLowerLeg)
+      this.#rigRotation(VRMHumanBoneName.RightUpperLeg, riggedPose.RightUpperLeg)
+      this.#rigRotation(VRMHumanBoneName.RightLowerLeg, riggedPose.RightLowerLeg)
 
       // Animate Hands
       if (leftHandLandmarks) {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { BackgroundImage } from './config'
+import { BackgroundImage } from '../../../common/config/backgroundConfig'
 
 defineProps<{
   bg: BackgroundImage

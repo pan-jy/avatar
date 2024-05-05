@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { backgroungImages, tabs } from './config'
+import { ref, onMounted, inject } from 'vue'
+import { tabs } from '../../../common/config/backgroundConfig'
 import type { Avatar } from '@renderer/common/three/Avatar'
+import { configKey } from '@renderer/common/config/Config'
 
 const props = defineProps<{
   avatar: Avatar
 }>()
 
 const curTab = ref(0)
-const curBg = ref(backgroungImages[0][0].src)
+const curBg = ref()
+const { backgroundImages } = inject(configKey)!
 
 const color = ref()
 function get0xRgb(r: number, g: number, b: number) {
@@ -19,13 +21,13 @@ function get0xRgb(r: number, g: number, b: number) {
 }
 
 onMounted(async () => {
-  const { type, value } = props.avatar.backgroundConfig
+  const { type, value } = props.avatar.backgroundConfig!
   curTab.value = type
   if (type === 2) {
     curBg.value = value // 16进制颜色
   } else {
     curBg.value =
-      backgroungImages[type].find((bg) => bg.src === value)?.src || backgroungImages[0][0].src
+      backgroundImages[type].find((bg) => bg.src === value)?.src || backgroundImages[0][0].src
   }
 })
 </script>
@@ -62,7 +64,7 @@ onMounted(async () => {
       </div>
       <div v-else class="flex flex-col gap-4 items-center after:h-[60px]">
         <ImageItem
-          v-for="bg in backgroungImages[curTab]"
+          v-for="bg in backgroundImages[curTab]"
           :key="bg.src"
           :bg="bg"
           class="w-[180px] h-[180px]"

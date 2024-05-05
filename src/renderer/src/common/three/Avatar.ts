@@ -3,9 +3,8 @@ import { Base, ModelFileType } from './Base'
 import { VRMLoaderPlugin, VRMUtils, VRM } from '@pixiv/three-vrm'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import io from 'socket.io-client'
-import { ModelInfo, PresetModelList } from '../modelConfig'
+import type { ModelInfo } from '../config/modelConfig'
 import { SetDrivingModelFn } from '../mocap/DriveModel'
-import { backgroungImages } from '@renderer/components/sideBar/customBackground/config'
 
 export enum BackgroundType {
   '2d',
@@ -16,11 +15,8 @@ export enum BackgroundType {
 export type BackgroundConfig = { type: BackgroundType; value?: string }
 
 export class Avatar extends Base {
-  backgroundConfig: BackgroundConfig = {
-    type: BackgroundType['2d'],
-    value: backgroungImages[0][0].src
-  }
-  modelInfo: ModelInfo = PresetModelList[0]
+  backgroundConfig: BackgroundConfig | null = null
+  modelInfo: ModelInfo | null = null
   #setDrivingModel: SetDrivingModelFn
 
   constructor(container: HTMLElement, setDrivingModel: SetDrivingModelFn) {
@@ -32,14 +28,13 @@ export class Avatar extends Base {
     this.#setDrivingModel = setDrivingModel
 
     // 设置控制器
-    this.controls.maxDistance = 10
+    this.controls.maxDistance = 3
     this.controls.minDistance = 0.5
-    this.controls.target.set(0, 1, 0)
   }
 
   async initBackground() {
-    const config = await window.electron.ipcRenderer.invoke('get-store', 'background')
-    if (config) this.backgroundConfig = config
+    const background = await window.electron.ipcRenderer.invoke('get-store', 'background')
+    this.backgroundConfig = background as BackgroundConfig
     this.setBackground(this.backgroundConfig)
   }
 
@@ -73,7 +68,7 @@ export class Avatar extends Base {
 
   async initModel() {
     const modelInfo = await window.electron.ipcRenderer.invoke('get-store', 'modelInfo')
-    if (modelInfo) this.modelInfo = modelInfo
+    this.modelInfo = modelInfo as ModelInfo
     this.handleModelChange(this.modelInfo)
   }
 
@@ -81,6 +76,18 @@ export class Avatar extends Base {
     window.electron.ipcRenderer.invoke('set-store', 'modelInfo', modelInfo)
     this.modelInfo = modelInfo
     const drivingModel = await this.loadModel(modelInfo.path)
+    // 设置相机位置
+    let neck
+    if (drivingModel instanceof VRM) {
+      neck = drivingModel.humanoid.getNormalizedBoneNode('neck')
+      this.camera.position.z = 1
+    } else {
+      neck = this.bonesMap.get('neck')
+      this.camera.position.z = 2
+    }
+    const { y = 1.4 } = neck!.localToWorld(neck!.position.clone())
+    this.camera.position.y = y
+    this.controls.target.y = y
     this.#setDrivingModel(drivingModel)
   }
 

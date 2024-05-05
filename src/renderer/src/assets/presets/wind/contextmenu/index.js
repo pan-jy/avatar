@@ -10,7 +10,7 @@ export default {
       'p-1.5',
 
       // Colors
-      'bg-surface-0 dark:bg-surface-700',
+      'bg-surface-200 dark:bg-surface-700',
       'text-surface-700 dark:text-white/80',
       'dark:border dark:border-surface-700'
     ]

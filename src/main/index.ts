@@ -76,7 +76,7 @@ app.on('window-all-closed', () => {
 
 // handel open new window
 ipcMain.handle('open-new-win', (_, path) => {
-  const win = createWindow(
+  createWindow(
     {
       autoHideMenuBar: true,
       show: false,
@@ -90,7 +90,6 @@ ipcMain.handle('open-new-win', (_, path) => {
     },
     path
   )
-  win.webContents.openDevTools()
 })
 
 ipcMain.on('close-win', () => {

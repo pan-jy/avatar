@@ -162,7 +162,9 @@ export default {
       'text-surface-600 dark:text-surface-0/70',
 
       // Misc
-      'overflow-y-auto'
+      'overflow-y-auto',
+
+      'flex items-center gap-4'
     ]
   }),
   footer: {
