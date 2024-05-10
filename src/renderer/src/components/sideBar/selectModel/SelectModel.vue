@@ -17,7 +17,7 @@ const modelList = config!.modelList
 const toast = useToast()
 const confirm = useConfirm()
 
-async function handelUploadModel(e) {
+async function handleUploadModel(e) {
   const file = e.target.files?.[0]
   if (!file) return
   try {
@@ -42,11 +42,11 @@ async function handelUploadModel(e) {
       })
   }
 }
-function handelSelect(model: ModelInfo) {
+function handleSelect(model: ModelInfo) {
   curModel.value = model
   props.avatar.handleModelChange(toRaw(model))
 }
-function handelDelete(model: ModelInfo) {
+function handleDelete(model: ModelInfo) {
   confirm.require({
     message: '确认删除该模型？',
     header: '删除模型',
@@ -57,7 +57,7 @@ function handelDelete(model: ModelInfo) {
     acceptClass: 'p-button-danger',
     accept: async () => {
       await config!.deleteModel(model)
-      if (curModel.value?.path === model.path) handelSelect(modelList.value[0]) // 如果删除的是当前模型, 则切换到列表第一个模型
+      if (curModel.value?.path === model.path) handleSelect(modelList.value[0]) // 如果删除的是当前模型, 则切换到列表第一个模型
       toast.add({
         severity: 'success',
         summary: '删除成功',
@@ -79,7 +79,7 @@ const dialogConfig = reactive<DialogConfig>({
   value: ''
 })
 
-async function handelModifySave() {
+async function handleModifySave() {
   const { type, value } = dialogConfig
   try {
     let message = ''
@@ -154,12 +154,12 @@ const deleteItem = {
   label: '删除',
   icon: 'pi pi-trash',
   command: () => {
-    handelDelete(menuIn.value!)
+    handleDelete(menuIn.value!)
     menuIn.value = undefined
   }
 }
 const items = ref(defaultItems)
-function handelRightClick(e: MouseEvent, model: ModelInfo) {
+function handleRightClick(e: MouseEvent, model: ModelInfo) {
   menuIn.value = model
   if (menuIn.value.userUpload) items.value = [...defaultItems, deleteItem]
   else items.value = defaultItems
@@ -169,7 +169,7 @@ function handelRightClick(e: MouseEvent, model: ModelInfo) {
 
 <template>
   <div class="flex flex-col items-center gap-4">
-    <FileUpload accept=".vrm,.fbx,.glb,.gltf" @change="handelUploadModel" />
+    <FileUpload accept=".vrm,.fbx,.glb,.gltf" @change="handleUploadModel" />
     <PrDivider type="solid" />
     <ModelItem
       v-for="model in modelList"
@@ -179,9 +179,9 @@ function handelRightClick(e: MouseEvent, model: ModelInfo) {
       :class="{
         'outline outline-4 outline-green-300': menuIn?.path === model?.path
       }"
-      @select="handelSelect"
-      @delete="handelDelete"
-      @contextmenu="handelRightClick($event, model)"
+      @select="handleSelect"
+      @delete="handleDelete"
+      @contextmenu="handleRightClick($event, model)"
     />
 
     <PrDialog
@@ -249,7 +249,7 @@ function handelRightClick(e: MouseEvent, model: ModelInfo) {
               }
             "
           />
-          <PrButton type="button" label="保存" @click="handelModifySave" />
+          <PrButton type="button" label="保存" @click="handleModifySave" />
         </div>
       </section>
     </PrDialog>
