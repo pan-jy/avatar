@@ -11,14 +11,14 @@ const props = defineProps<{
 }>()
 
 const curModel = ref()
-const config = inject(configKey)!
-const modelList = config.modelList
+const config = inject(configKey)
+const modelList = config!.modelList
 
 const toast = useToast()
 const confirm = useConfirm()
 
-async function handleUploadModel(e: InputEvent) {
-  const file = (e.target as HTMLInputElement).files?.[0]
+async function handleUploadModel(e) {
+  const file = e.target.files?.[0]
   if (!file) return
   try {
     await config!.uploadModel({
