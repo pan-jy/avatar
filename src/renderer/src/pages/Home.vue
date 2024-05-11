@@ -9,6 +9,7 @@ import SelectModel from '@renderer/components/sideBar/selectModel/SelectModel.vu
 import CustomBackground from '@renderer/components/sideBar/customBackground/CustomBackground.vue'
 import Toast from 'primevue/toast'
 import ConfirmDialog from 'primevue/confirmdialog'
+import ChartletManage from '@renderer/components/sideBar/chartletManage/ChartletManage.vue'
 
 // DOM 元素
 const avatarContainer = ref<HTMLCanvasElement | null>(null)
@@ -57,6 +58,10 @@ const sideBars = {
   customBackground: {
     title: '自定义背景',
     component: CustomBackground
+  },
+  chartletManage: {
+    title: '贴图',
+    component: ChartletManage
   }
 }
 type SideBarType = keyof typeof sideBars
@@ -164,7 +169,7 @@ onUnmounted(() => {
     </template>
 
     <template #3>
-      <button v-tooltip.top="'Backgrounds'" class="w-full h-full">
+      <button v-tooltip.top="'贴图'" class="w-full h-full" @click="changeSideBar('chartletManage')">
         <i class="pi pi-slack text-xl" />
       </button>
     </template>
