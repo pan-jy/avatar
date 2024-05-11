@@ -26,11 +26,9 @@ export default defineConfig({
     plugins: [externalizeDepsPlugin()]
   },
   renderer: {
-    assetsInclude: ['**/*.vrm', '**/*.fbx', '**/*.glb'],
     resolve: {
       alias: {
-        '@renderer': resolve('src/renderer/src'),
-        '@resources': resolve(__dirname, 'resources')
+        '@renderer': resolve('src/renderer/src')
       }
     },
     plugins: [
