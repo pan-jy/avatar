@@ -74,7 +74,7 @@ app.on('window-all-closed', () => {
   }
 })
 
-// handle open new window
+// handel open new window
 ipcMain.handle('open-new-win', (_, path) => {
   createWindow(
     {

@@ -63,8 +63,6 @@ onMounted(async () => {
         </div>
       </div>
       <div v-else class="flex flex-col gap-4 items-center after:h-[60px]">
-        <FileUpload accept="image/*" />
-        <PrDivider type="solid" />
         <ImageItem
           v-for="bg in backgroundImages[curTab]"
           :key="bg.src"

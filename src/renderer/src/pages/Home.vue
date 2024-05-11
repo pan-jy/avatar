@@ -75,7 +75,7 @@ function changeSideBar(type: SideBarType) {
 //     : sourceCanvas.value!.classList.add('hidden')
 // }
 
-function handleCameraClick() {
+function handelCameraClick() {
   if (workflowStage.value === 'running') stopMoCap()
   else dialogVisible.value = true
 }
@@ -141,7 +141,7 @@ onUnmounted(() => {
       <button
         v-tooltip.top="workflowStage === 'running' ? '暂停' : '开始'"
         class="w-full h-full"
-        @click="handleCameraClick"
+        @click="handelCameraClick"
       >
         <i class="pi text-5xl" :class="workflowStage === 'running' ? 'pi-pause' : 'pi-camera'" />
       </button>
@@ -165,7 +165,7 @@ onUnmounted(() => {
 
     <template #3>
       <button v-tooltip.top="'Backgrounds'" class="w-full h-full">
-        <i class="pi pi-slack text-xl" />
+        <i class="pi pi-palette text-xl" />
       </button>
     </template>
 
