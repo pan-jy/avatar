@@ -2,6 +2,7 @@ export interface BackgroundImage {
   name: string
   cover?: string
   src?: string
+  userUpload?: boolean
 }
 
 const resourcesPath = import.meta.glob('@resources/background/**/*.jpg', {
