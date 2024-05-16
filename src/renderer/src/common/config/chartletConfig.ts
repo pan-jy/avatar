@@ -6,5 +6,5 @@ export interface ChartLetItem {
 export type ChartLetList = ChartLetItem[]
 
 export async function getChartletList() {
-  return await window.electron.ipcRenderer.invoke('read-resources-dir', '/chartlet')
+  return (await window.electron.ipcRenderer.invoke('read-resources-dir', '/chartlet')).reverse()
 }

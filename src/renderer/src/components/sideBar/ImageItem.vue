@@ -4,11 +4,13 @@ import { BackgroundImage } from '../../common/config/backgroundConfig'
 interface Props {
   image: BackgroundImage
   active?: boolean
-  objectFit?: string
+  objectFit?: 'contain' | 'cover'
+  activeClass?: string
 }
 
 withDefaults(defineProps<Props>(), {
-  objectFit: 'cover'
+  objectFit: 'cover',
+  activeClass: 'outline-[7px] outline-primary-300'
 })
 
 defineEmits<{
@@ -21,9 +23,7 @@ defineEmits<{
   <div
     v-tooltip.bottom="image.name"
     class="relative bg-item rounded-2xl overflow-hidden flex justify-center items-center border-4 border-white outline"
-    :class="
-      active ? 'outline-[7px] outline-primary-300' : 'hover:outline-[5px] hover:outline-white/40'
-    "
+    :class="active ? activeClass : 'hover:outline-[5px] hover:outline-white/40'"
     @click="$emit('select', image.src)"
   >
     <PrImage
