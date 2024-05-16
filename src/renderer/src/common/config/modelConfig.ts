@@ -7,64 +7,26 @@ export interface ModelInfo {
   cover?: string
 }
 
-const BASE_URL = import.meta.env.BASE_URL
+export type ModelList = Array<ModelInfo>
 
-export type PresetModelList = Array<ModelInfo>
-
-export const presetModelList: PresetModelList = [
-  {
-    name: 'Yukino',
-    path: BASE_URL + 'models/vrm/Uniform.vrm'
-  },
-  {
-    name: 'VAL',
-    path: BASE_URL + 'models/vrm/VAL.vrm',
-    cover: BASE_URL + 'models/covers/VAL.png'
-  },
-  {
-    name: 'Ashtra',
-    path: BASE_URL + 'models/vrm/Ashtra.vrm',
-    cover: BASE_URL + 'models/covers/Ashtra.png'
-  },
-  {
-    name: 'Hanako',
-    path: BASE_URL + 'models/vrm/Hanako.vrm',
-    cover: BASE_URL + 'models/covers/Hanako.png'
-  },
-  {
-    name: 'Sendagaya',
-    path: BASE_URL + 'models/vrm/Sendagaya.vrm',
-    cover: BASE_URL + 'models/covers/Sendagaya.png'
-  },
-  {
-    name: 'Amaris',
-    path: BASE_URL + 'models/vrm/Amaris.vrm',
-    cover: BASE_URL + 'models/covers/Amaris.png'
-  },
-  {
-    name: 'Natsuki',
-    path: BASE_URL + 'models/vrm/Natsuki.vrm',
-    cover: BASE_URL + 'models/covers/Natsuki.png'
-  },
-  {
-    name: 'Puer',
-    path: BASE_URL + 'models/vrm/PureGirl.vrm'
-  },
-  {
-    name: 'Shirai',
-    path: BASE_URL + 'models/vrm/Shirai.vrm'
-  },
-  {
-    name: 'Vanguard',
-    path: BASE_URL + 'models/fbx/Vanguard.fbx',
-    cover: BASE_URL + 'models/covers/Vanguard.png'
-  },
-  {
-    name: 'Mousey',
-    path: BASE_URL + 'models/fbx/Mousey.fbx',
-    cover: BASE_URL + 'models/covers/Mousey.png'
-  }
-]
+export async function getModelList() {
+  const list = await window.electron.ipcRenderer.invoke('read-resources-dir', '/models')
+  const modelList = list
+    .map(({ children }) => children)
+    .flat()
+    .map(({ name, children }) => {
+      const coverIdx = children.findIndex(
+        ({ name }) => name.endsWith('.png') || name.endsWith('.jpg')
+      )
+      return {
+        name,
+        path: children[1 - coverIdx]?.src,
+        cover: children[coverIdx]?.src
+      }
+    })
+    .reverse() as ModelList
+  return modelList
+}
 
 export const FBXAxis: Record<keyof TPose, Array<string>> = {
   Hips: ['-x', 'y', '-z'],

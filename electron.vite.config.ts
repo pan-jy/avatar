@@ -20,7 +20,8 @@ export default defineConfig({
           }
         ]
       })
-    ]
+    ],
+    publicDir: resolve(__dirname, 'resources')
   },
   preload: {
     plugins: [externalizeDepsPlugin()]

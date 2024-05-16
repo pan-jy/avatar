@@ -1,26 +1,34 @@
-import { ModelInfo, PresetModelList, presetModelList } from '@renderer/common/config/modelConfig'
-import { BackgroundImage, backgroundImages } from '@renderer/common/config/backgroundConfig'
+import { ModelInfo, ModelList, getModelList } from '@renderer/common/config/modelConfig'
+import {
+  BackgroundImage,
+  BackgroundImageList,
+  getBackgroundList
+} from '@renderer/common/config/backgroundConfig'
 import { InjectionKey, ref, toRaw } from 'vue'
 import { BackgroundType } from '../three/Avatar'
+import { ChartLetList, getChartletList } from './chartletConfig'
 
 export const configKey = Symbol() as InjectionKey<Config>
 
 export class Config {
-  modelList = ref<PresetModelList>([])
-  backgroundImages = ref<BackgroundImage[][]>([])
+  modelList = ref<ModelList>([])
+  backgroundImages = ref<BackgroundImageList>([])
+  chartletList = ref<ChartLetList>([])
 
   constructor() {
     this.initModelList()
     this.initBackground()
+    this.initChartlet()
   }
 
   async initModelList() {
     const modelList = await window.electron.ipcRenderer.invoke('get-store', 'modelList')
     if (modelList) this.modelList.value = modelList
     else {
-      window.electron.ipcRenderer.invoke('set-store', 'modelList', presetModelList)
-      window.electron.ipcRenderer.invoke('set-store', 'modelInfo', presetModelList[0])
-      this.modelList.value = presetModelList
+      const ModelList = await getModelList()
+      window.electron.ipcRenderer.invoke('set-store', 'modelList', ModelList)
+      window.electron.ipcRenderer.invoke('set-store', 'modelInfo', ModelList[0])
+      this.modelList.value = ModelList
     }
   }
 
@@ -50,6 +58,7 @@ export class Config {
     const backgroundList = await window.electron.ipcRenderer.invoke('get-store', 'backgroundList')
     if (backgroundList) this.backgroundImages.value = backgroundList
     else {
+      const backgroundImages = await getBackgroundList()
       window.electron.ipcRenderer.invoke('set-store', 'backgroundList', backgroundImages)
       window.electron.ipcRenderer.invoke('set-store', 'background', {
         type: BackgroundType['2d'],
@@ -89,5 +98,15 @@ export class Config {
       'backgroundList',
       toRaw(this.backgroundImages.value)
     )
+  }
+
+  async initChartlet() {
+    const chartletList = await window.electron.ipcRenderer.invoke('get-store', 'chartletList')
+    if (chartletList) this.chartletList.value = chartletList
+    else {
+      const list = await getChartletList()
+      window.electron.ipcRenderer.invoke('set-store', 'chartletList', list)
+      this.chartletList.value = list
+    }
   }
 }

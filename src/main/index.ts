@@ -6,7 +6,7 @@ import { closeServer, createServer } from './server'
 import Store from 'electron-store'
 import fs from 'fs'
 
-const NODE_ENV = process.env.NODE_ENV
+const NODE_ENV = process.env.NODE_ENV as 'development' | 'production'
 
 function createWindow(config?: Electron.BrowserWindowConstructorOptions, path = ''): BrowserWindow {
   // Create the browser window.
@@ -134,21 +134,26 @@ ipcMain.handle('delete-store', (_, key: string) => {
  */
 interface IFileInfo {
   name: string
-  path: string
-  children: IFileInfo[]
+  src?: string
+  children?: IFileInfo[]
 }
-ipcMain.handle('read-dir', (_, path: string) => {
+ipcMain.handle('read-resources-dir', (_, path: string) => {
   const list: IFileInfo[] = []
   function deep(dir: string, list: IFileInfo[]) {
-    const fileList = fs.readdirSync(dir)
-    fileList.forEach((item) => {
-      const itemPath = dir + item + '/'
+    fs.readdirSync(dir).forEach((item) => {
+      const itemPath = (dir + '/' + item).replace(/\\/g, '/')
       const children = []
-      if (fs.statSync(itemPath).isDirectory()) deep(itemPath, children)
-      list.push({ name: item, path: itemPath, children })
+      if (fs.statSync(itemPath).isDirectory()) {
+        deep(itemPath, children)
+        list.push({ name: item, children })
+      } else list.push({ name: item, src: itemPath })
     })
   }
-  deep(path, list)
+  const dir =
+    NODE_ENV === 'development'
+      ? join(process.cwd(), 'resources', path)
+      : join(__dirname, '../renderer', path)
+  deep(dir, list)
 
   return list
 })
