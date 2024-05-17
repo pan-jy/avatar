@@ -53,15 +53,20 @@ const menuItems = computed(() => {
 const sideBars = {
   selectModel: {
     title: '选择模型',
-    component: SelectModel
+    component: SelectModel,
+    sideBarConfig: {}
   },
   customBackground: {
     title: '自定义背景',
-    component: CustomBackground
+    component: CustomBackground,
+    sideBarConfig: {}
   },
   chartletManage: {
     title: '贴图',
-    component: ChartletManage
+    component: ChartletManage,
+    sideBarConfig: {
+      modal: false
+    }
   }
 }
 type SideBarType = keyof typeof sideBars
@@ -120,7 +125,10 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div ref="avatarContainer" class="w-full h-full" />
+  <div ref="avatarContainer" class="w-full h-full">
+    <canvas id="fabricCanvas" :width="width" :height="height" />
+  </div>
+
   <div
     v-show="workflowStage === 'running' || workflowStage === 'pause'"
     ref="videoContainer"
@@ -135,6 +143,7 @@ onUnmounted(() => {
     v-if="currentSideBar"
     v-model:visible="sideBarVisible"
     :header="sideBars[currentSideBar].title"
+    v-bind="sideBars[currentSideBar]?.sideBarConfig"
   >
     <component :is="sideBars[currentSideBar].component" :avatar="avatar" />
   </PrSidebar>

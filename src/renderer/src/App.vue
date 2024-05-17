@@ -26,6 +26,10 @@ body,
   line-height: normal !important;
 }
 
+.fabric-canvas-container {
+  position: absolute !important;
+}
+
 ::-webkit-scrollbar {
   width: 10px;
 }

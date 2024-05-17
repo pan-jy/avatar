@@ -5,6 +5,8 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import io from 'socket.io-client'
 import type { ModelInfo } from '../config/modelConfig'
 import { SetDrivingModelFn } from '../mocap/DriveModel'
+import { fabric } from 'fabric'
+import { ChartLetItem, ChartLetList } from '../config/chartletConfig'
 
 export enum BackgroundType {
   '2d',
@@ -13,14 +15,30 @@ export enum BackgroundType {
 }
 
 export type BackgroundConfig = { type: BackgroundType; value?: string }
+type Layer = 'model' | 'chartlet'
 
 export class Avatar extends Base {
   backgroundConfig: BackgroundConfig | null = null
   modelInfo: ModelInfo | null = null
+  chartletList: ChartLetList = []
+  #chartletMap: Map<ChartLetItem, fabric.Object> = new Map()
+  #fabricCanvas: fabric.Canvas
+  #curLayer: Layer = 'model'
   #setDrivingModel: SetDrivingModelFn
 
   constructor(container: HTMLElement, setDrivingModel: SetDrivingModelFn) {
-    super(container)
+    const fabricCanvas = new fabric.Canvas('fabricCanvas', {
+      containerClass: 'fabric-canvas-container'
+    })
+
+    const resizeFn = (width: number, height: number) => {
+      fabricCanvas.setWidth(width)
+      fabricCanvas.setHeight(height)
+      fabricCanvas.renderAll()
+    }
+    super(container, resizeFn)
+
+    this.#fabricCanvas = fabricCanvas
 
     this.initBackground()
 
@@ -30,6 +48,63 @@ export class Avatar extends Base {
     // 设置控制器
     this.controls.maxDistance = 3
     this.controls.minDistance = 0.5
+
+    this.#switchLayer('model')
+
+    this.watchKeyEvents()
+  }
+
+  watchKeyEvents() {
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Shift') {
+        this.#switchLayer()
+      }
+    })
+  }
+
+  #switchLayer(layer?: Layer) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const fabricContainer = (<any>this.#fabricCanvas).wrapperEl as HTMLDivElement
+    if (!fabricContainer) return
+
+    if (layer) {
+      this.#curLayer = layer
+      fabricContainer.style.pointerEvents = layer === 'model' ? 'none' : 'auto'
+    } else {
+      this.#switchLayer(this.#curLayer === 'model' ? 'chartlet' : 'model')
+    }
+  }
+
+  renderChartlets(chartletList: ChartLetList) {
+    this.#switchLayer('chartlet')
+    for (const item of new Set([...chartletList, ...this.chartletList])) {
+      if (chartletList.includes(item) && this.chartletList.includes(item)) continue
+      else if (chartletList.includes(item)) this.#renderChartLetItem(item)
+      else this.#deleteChartLetItem(item)
+    }
+    this.chartletList = chartletList
+  }
+
+  #renderChartLetItem(item: ChartLetItem) {
+    const src = item.src
+    if (!src) return
+    fabric.Image.fromURL(src, (img) => {
+      const imgScale = 100 / (img.width || 100)
+      img.set({
+        left: 300,
+        top: 100,
+        scaleX: imgScale,
+        scaleY: imgScale
+      })
+      this.#chartletMap.set(item, img)
+      this.#fabricCanvas.add(img)
+    })
+  }
+
+  #deleteChartLetItem(item: ChartLetItem) {
+    const obj = this.#chartletMap.get(item)
+    obj && this.#fabricCanvas.remove(obj)
+    this.#chartletMap.delete(item)
   }
 
   async initBackground() {
