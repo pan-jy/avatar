@@ -21,7 +21,7 @@
 ## 系统架构
 
 <div align="center">
-<img src="https://github.com/pan-jy/avatar/blob/master/resources/system.png" height="512px" width="512px">
+<img src="https://github.com/pan-jy/avatar/blob/master/resources/system.png" width="554px" height="457px" />
 </div>
 
 ## Project Setup
