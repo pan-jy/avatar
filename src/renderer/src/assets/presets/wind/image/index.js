@@ -2,6 +2,9 @@ export default {
   root: {
     class: 'relative inline-block'
   },
+  image: {
+    class: 'object-contain'
+  },
   button: {
     class: [
       // Flexbox & Alignment

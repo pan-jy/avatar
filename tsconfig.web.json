@@ -12,10 +12,7 @@
     "paths": {
       "@renderer/*": [
         "src/renderer/src/*"
-      ],
-      "@resources/*": [
-        "resources/*"
-      ],
+      ]
     }
   }
 }

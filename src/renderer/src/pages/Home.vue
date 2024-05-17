@@ -9,6 +9,7 @@ import SelectModel from '@renderer/components/sideBar/selectModel/SelectModel.vu
 import CustomBackground from '@renderer/components/sideBar/customBackground/CustomBackground.vue'
 import Toast from 'primevue/toast'
 import ConfirmDialog from 'primevue/confirmdialog'
+import ChartletManage from '@renderer/components/sideBar/chartletManage/ChartletManage.vue'
 
 // DOM 元素
 const avatarContainer = ref<HTMLCanvasElement | null>(null)
@@ -52,11 +53,20 @@ const menuItems = computed(() => {
 const sideBars = {
   selectModel: {
     title: '选择模型',
-    component: SelectModel
+    component: SelectModel,
+    sideBarConfig: {}
   },
   customBackground: {
     title: '自定义背景',
-    component: CustomBackground
+    component: CustomBackground,
+    sideBarConfig: {}
+  },
+  chartletManage: {
+    title: '贴图',
+    component: ChartletManage,
+    sideBarConfig: {
+      modal: false
+    }
   }
 }
 type SideBarType = keyof typeof sideBars
@@ -115,7 +125,10 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div ref="avatarContainer" class="w-full h-full" />
+  <div ref="avatarContainer" class="w-full h-full">
+    <canvas id="fabricCanvas" :width="width" :height="height" />
+  </div>
+
   <div
     v-show="workflowStage === 'running' || workflowStage === 'pause'"
     ref="videoContainer"
@@ -130,6 +143,7 @@ onUnmounted(() => {
     v-if="currentSideBar"
     v-model:visible="sideBarVisible"
     :header="sideBars[currentSideBar].title"
+    v-bind="sideBars[currentSideBar]?.sideBarConfig"
   >
     <component :is="sideBars[currentSideBar].component" :avatar="avatar" />
   </PrSidebar>
@@ -164,7 +178,7 @@ onUnmounted(() => {
     </template>
 
     <template #3>
-      <button v-tooltip.top="'Backgrounds'" class="w-full h-full">
+      <button v-tooltip.top="'贴图'" class="w-full h-full" @click="changeSideBar('chartletManage')">
         <i class="pi pi-slack text-xl" />
       </button>
     </template>

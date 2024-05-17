@@ -4,6 +4,9 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { closeServer, createServer } from './server'
 import Store from 'electron-store'
+import fs from 'fs'
+
+const NODE_ENV = process.env.NODE_ENV as 'development' | 'production'
 
 function createWindow(config?: Electron.BrowserWindowConstructorOptions, path = ''): BrowserWindow {
   // Create the browser window.
@@ -114,13 +117,43 @@ ipcMain.handle('close-server', () => {
 const store = new Store()
 
 ipcMain.handle('get-store', (_, key: string) => {
-  return store.get(key)
+  return store.get(`${NODE_ENV}.${key}`)
 })
 
 ipcMain.handle('set-store', (_, key: string, value: unknown) => {
-  store.set(key, value)
+  store.set(`${NODE_ENV}.${key}`, value)
 })
 
 ipcMain.handle('delete-store', (_, key: string) => {
-  store.delete(key)
+  store.delete(`${NODE_ENV}.${key}`)
+})
+
+// 本地文件操作
+/**
+ * 递归目录
+ */
+interface IFileInfo {
+  name: string
+  src?: string
+  children?: IFileInfo[]
+}
+ipcMain.handle('read-resources-dir', (_, path: string) => {
+  const list: IFileInfo[] = []
+  function deep(dir: string, list: IFileInfo[]) {
+    fs.readdirSync(dir).forEach((item) => {
+      const itemPath = (dir + '/' + item).replace(/\\/g, '/')
+      const children = []
+      if (fs.statSync(itemPath).isDirectory()) {
+        deep(itemPath, children)
+        list.push({ name: item, children })
+      } else list.push({ name: item, src: itemPath })
+    })
+  }
+  const dir =
+    NODE_ENV === 'development'
+      ? join(process.cwd(), 'resources', path)
+      : join(__dirname, '../renderer', path)
+  deep(dir, list)
+
+  return list
 })

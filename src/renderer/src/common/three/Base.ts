@@ -31,7 +31,7 @@ export class Base {
   model: Group<Object3DEventMap> | null = null
   bonesMap: Map<VRMHumanBoneName, Bone<Object3DEventMap>> = new Map()
 
-  constructor(container: HTMLElement) {
+  constructor(container: HTMLElement, resizeFn?: (width: number, height: number) => void) {
     if (!container) throw new Error('container is required')
 
     this.#container = container
@@ -50,7 +50,7 @@ export class Base {
     this.renderer.shadowMap.enabled = true
 
     // 监听容器大小
-    this.watchSize()
+    this.watchSize(resizeFn)
 
     // 创建控制器
     this.controls = new OrbitControls(this.camera, this.renderer.domElement)
@@ -59,7 +59,7 @@ export class Base {
     container.append(this.renderer.domElement)
   }
 
-  watchSize() {
+  watchSize(resizeFn?: (width: number, height: number) => void) {
     const { width, height } = useElementSize(this.#container)
     const containerSize = [width, height]
     watch(
@@ -74,6 +74,8 @@ export class Base {
           this.renderer.setSize(width, height)
           // 更新渲染器的像素比
           this.renderer.setPixelRatio(window.devicePixelRatio)
+
+          resizeFn && resizeFn(width, height)
         },
         300,
         true

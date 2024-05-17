@@ -119,8 +119,8 @@ function handleDelete(background: BackgroundImage) {
         <ImageItem
           v-for="bg in backgroundImages[curTab]"
           :key="bg.src"
-          :bg="bg"
-          class="w-[180px] h-[180px]"
+          :image="bg"
+          class="w-[180px] h-[180px] bg-white/90"
           :active="curBg === bg.src"
           @select="handleChangeBg"
           @delete="handleDelete"
