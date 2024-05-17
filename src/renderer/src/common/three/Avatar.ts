@@ -7,6 +7,7 @@ import type { ModelInfo } from '../config/modelConfig'
 import { SetDrivingModelFn } from '../mocap/DriveModel'
 import { fabric } from 'fabric'
 import { ChartLetItem, ChartLetList } from '../config/chartletConfig'
+import { useToast } from 'primevue/usetoast'
 
 export enum BackgroundType {
   '2d',
@@ -25,6 +26,7 @@ export class Avatar extends Base {
   #fabricCanvas: fabric.Canvas
   #curLayer: Layer = 'model'
   #setDrivingModel: SetDrivingModelFn
+  #toast = useToast()
 
   constructor(container: HTMLElement, setDrivingModel: SetDrivingModelFn) {
     const fabricCanvas = new fabric.Canvas('fabricCanvas', {
@@ -68,8 +70,15 @@ export class Avatar extends Base {
     if (!fabricContainer) return
 
     if (layer) {
+      if (this.#curLayer === layer) return
       this.#curLayer = layer
       fabricContainer.style.pointerEvents = layer === 'model' ? 'none' : 'auto'
+      const toastMsg = `当前图层为：${layer === 'model' ? '模型层' : '贴图层'}, 按 Shift 切换`
+      this.#toast.add({
+        severity: 'info',
+        detail: toastMsg,
+        life: 3000
+      })
     } else {
       this.#switchLayer(this.#curLayer === 'model' ? 'chartlet' : 'model')
     }
