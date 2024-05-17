@@ -95,6 +95,10 @@ ipcMain.handle('open-new-win', (_, path) => {
   )
 })
 
+ipcMain.handle('open-external', (_, url) => {
+  shell.openExternal(url)
+})
+
 ipcMain.on('close-win', () => {
   BrowserWindow.getFocusedWindow()?.close()
 })

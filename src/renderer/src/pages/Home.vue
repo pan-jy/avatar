@@ -35,7 +35,9 @@ const menuItems = computed(() => {
     {
       label: '关于',
       icon: 'pi pi-exclamation-circle',
-      command: () => {}
+      command: () => {
+        window.electron.ipcRenderer.invoke('open-external', 'https://github.com/pan-jy/avatar')
+      }
     },
     {
       label: '设置',
