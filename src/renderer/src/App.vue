@@ -28,6 +28,7 @@ body,
 
 .fabric-canvas-container {
   position: absolute !important;
+  pointer-events: none;
 }
 
 ::-webkit-scrollbar {
