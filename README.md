@@ -26,19 +26,19 @@
 
 ## Project Setup
 
-### Install
+### 安装依赖
 
 ```bash
 $ npm install
 ```
 
-### Development
+### 开发
 
 ```bash
 $ npm run dev
 ```
 
-### Build
+### 构建
 
 ```bash
 # For windows
