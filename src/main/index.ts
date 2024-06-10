@@ -81,14 +81,15 @@ app.on('window-all-closed', () => {
 ipcMain.handle('open-new-win', (_, path) => {
   createWindow(
     {
-      autoHideMenuBar: true,
-      show: false,
+      icon,
       title: path,
+      show: false,
+      autoHideMenuBar: true,
       parent: BrowserWindow.getFocusedWindow() ?? undefined,
       webPreferences: {
-        nodeIntegration: true,
-        contextIsolation: false,
-        preload: join(__dirname, '../preload/index.js')
+        preload: join(__dirname, '../preload/index.js'),
+        sandbox: false,
+        webSecurity: false
       }
     },
     path
